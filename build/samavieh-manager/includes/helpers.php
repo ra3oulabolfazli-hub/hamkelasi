@@ -421,10 +421,24 @@ function smv_active_showtime_id($theatre_id) {
     return $actives ? (int) reset($actives) : 0;
 }
 
-/** آیا این سانس، سانس فعالِ روز خودش است؟ */
+/**
+ * نحوهٔ تکمیل سانس‌های یک اجرا:
+ * ordered = ترتیبیِ روزبه‌روز بر اساس اولویت (پیش‌فرض)
+ * free    = آزاد/همزمان: همهٔ سانس‌های دارای ظرفیت همزمان فعال و قابل انتخاب‌اند.
+ */
+function smv_theatre_fill_mode($theatre_id) {
+    $mode = (string) get_post_meta($theatre_id, '_smv_showtime_fill_mode', true);
+    return 'free' === $mode ? 'free' : 'ordered';
+}
+
+/** آیا این سانس در حال حاضر قابل رزرو است؟ (در حالت آزاد همهٔ دارای ظرفیت، در حالت ترتیبی سانس فعالِ روز خودش) */
 function smv_showtime_is_active($showtime_id, $theatre_id = 0) {
     if (!$theatre_id) {
         $theatre_id = absint(get_post_meta($showtime_id, '_smv_theatre_id', true));
+    }
+    if ('free' === smv_theatre_fill_mode($theatre_id)) {
+        $remaining = smv_showtime_seats_remaining($showtime_id);
+        return null === $remaining || $remaining > 0;
     }
     $date = (string) get_post_meta($showtime_id, '_smv_showtime_date', true);
     $actives = smv_active_showtime_ids($theatre_id);

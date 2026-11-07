@@ -50,6 +50,7 @@ class SMV_Booking {
             $ordered_posts = smv_ordered_showtimes_for_theatre($theatre_id);
         }
         $active_ids = $theatre_id ? smv_active_showtime_ids($theatre_id) : array();
+        $fill_mode = $theatre_id ? smv_theatre_fill_mode($theatre_id) : 'ordered';
         // گروه‌بندی بر اساس روز: هر روز مستقل و به ترتیب خودش پر می‌شود.
         $day_groups = array();
         foreach ($ordered_posts as $ordered_post) {
@@ -59,7 +60,11 @@ class SMV_Booking {
         ksort($day_groups);
         ob_start();
         if ($ordered_posts) :
-            echo '<p class="smv-showtime-order-note">سانس‌ها <strong>روزبه‌روز</strong> و داخل هر روز <strong>به ترتیب اولویت</strong> پر می‌شوند؛ در هر روز ابتدا سانس با اولویت اول فعال است و پس از تکمیل ظرفیت آن، سانس بعدیِ همان روز فعال می‌شود. روزهای مختلف مستقل از هم هستند.</p>';
+            if ('free' === $fill_mode) {
+                echo '<p class="smv-showtime-order-note">تکمیل سانس‌ها در این اجرا <strong>آزاد و همزمان</strong> است؛ هر سانسی که ظرفیت دارد قابل انتخاب است و می‌توانید هر کدام را که می‌خواهید رزرو کنید.</p>';
+            } else {
+                echo '<p class="smv-showtime-order-note">سانس‌ها <strong>روزبه‌روز</strong> و داخل هر روز <strong>به ترتیب اولویت</strong> پر می‌شوند؛ در هر روز ابتدا سانس با اولویت اول فعال است و پس از تکمیل ظرفیت آن، سانس بعدیِ همان روز فعال می‌شود. روزهای مختلف مستقل از هم هستند.</p>';
+            }
             $day_number = 0;
             foreach ($day_groups as $day_date => $day_posts) :
                 $day_number++;
@@ -81,8 +86,8 @@ class SMV_Booking {
                 $booked = smv_showtime_booked_count($id);
                 $percent = ($capacity > 0) ? min(100, round(($booked / $capacity) * 100)) : 0;
                 $is_full = (null !== $remaining && $remaining <= 0);
-                $state = $is_full ? 'full' : ((isset($active_ids[$day_date]) && (int) $active_ids[$day_date] === $id) || !$theatre_id ? 'active' : 'waiting');
-                $state_label = 'full' === $state ? 'تکمیل ظرفیت' : ('active' === $state ? 'در حال ثبت‌نام' : 'در انتظار تکمیل سانس قبلیِ همین روز');
+                $state = $theatre_id ? smv_showtime_state($id, $theatre_id) : ($is_full ? 'full' : 'active');
+                $state_label = 'full' === $state ? 'تکمیل ظرفیت' : ('active' === $state ? ('free' === $fill_mode ? 'قابل ثبت‌نام (همزمان)' : 'در حال ثبت‌نام') : 'در انتظار تکمیل سانس قبلیِ همین روز');
                 ?>
                 <article class="smv-showtime-card<?php echo $is_full ? ' is-full' : ''; ?> is-<?php echo esc_attr($state); ?>" data-smv-showtime-state="<?php echo esc_attr($state); ?>">
                     <div class="smv-showtime-header">

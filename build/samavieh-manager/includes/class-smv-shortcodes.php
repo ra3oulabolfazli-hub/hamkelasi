@@ -384,7 +384,7 @@ class SMV_Shortcodes {
 
                 <div class="smv-social-section">
                     <h3>شبکه‌های اجتماعی</h3>
-                    <?php echo do_shortcode('[samavieh_social platform="instagram" count="6"]'); ?>
+                    <?php echo do_shortcode('[samavieh_social count="6"]'); ?>
                 </div>
             </div>
         </section>
@@ -411,6 +411,7 @@ class SMV_Shortcodes {
         // سانس‌ها روزبه‌روز و داخل هر روز به ترتیب اولویت پر می‌شوند:
         // در هر روز فقط اولین سانس دارای ظرفیت «فعال» و قابل انتخاب است؛
         // قبلی‌های همان روز «تکمیل ظرفیت» و بعدی‌های همان روز «در انتظار» هستند. روزهای مختلف مستقل‌اند.
+        $fill_mode = function_exists('smv_theatre_fill_mode') ? smv_theatre_fill_mode($theatre_id) : 'ordered';
         $active_ids_by_day = function_exists('smv_active_showtime_ids') ? smv_active_showtime_ids($theatre_id) : array();
         $showtimes_by_day = array();
         foreach (smv_group_showtimes_by_day($theatre_id) as $day_date => $day_showtimes) {
@@ -419,7 +420,7 @@ class SMV_Shortcodes {
                 $sid = $showtime->ID;
                 $priority++;
                 $remaining = smv_showtime_seats_remaining($sid);
-                $state = (null !== $remaining && $remaining <= 0) ? 'full' : ((isset($active_ids_by_day[$day_date]) && (int) $sid === (int) $active_ids_by_day[$day_date]) ? 'active' : 'waiting');
+                $state = function_exists('smv_showtime_state') ? smv_showtime_state($sid, $theatre_id) : ((null !== $remaining && $remaining <= 0) ? 'full' : 'active');
                 $showtimes_by_day[$day_date][] = array(
                     'id' => $sid,
                     'priority' => $priority,
@@ -505,7 +506,7 @@ class SMV_Shortcodes {
                                         </optgroup>
                                     <?php endforeach; ?>
                                 </select>
-                                <small>سانس‌ها روزبه‌روز و داخل هر روز به ترتیب اولویت پر می‌شوند؛ در هر روز فقط سانس فعال قابل انتخاب است و روزهای مختلف مستقل از هم هستند.</small>
+                                <small><?php echo 'free' === $fill_mode ? 'تکمیل سانس‌ها آزاد و همزمان است؛ هر سانسی که ظرفیت دارد را می‌توانید انتخاب کنید.' : 'سانس‌ها روزبه‌روز و داخل هر روز به ترتیب اولویت پر می‌شوند؛ در هر روز فقط سانس فعال قابل انتخاب است و روزهای مختلف مستقل از هم هستند.'; ?></small>
                             </div>
                         <?php endif; ?>
 

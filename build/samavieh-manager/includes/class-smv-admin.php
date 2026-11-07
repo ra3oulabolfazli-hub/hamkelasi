@@ -706,6 +706,7 @@ class SMV_Admin {
                             <div class="smv-showtime-toolbar-text">
                                 <h3><span class="dashicons dashicons-calendar-alt"></span> سانس‌ها و ظرفیت</h3>
                                 <p>برای هر اجرا می‌توانید چند سانس با تاریخ، ساعت، ظرفیت و قیمت جداگانه تعریف کنید. تغییرات با دکمهٔ «<?php echo esc_html($button_text); ?>» ذخیره می‌شود. <strong>سانس‌ها روزبه‌روز پر می‌شوند:</strong> داخل هر روز، سانس با «اولویت» کمتر (۱) اول پر می‌شود و بعد از تکمیل ظرفیتش، سانس بعدیِ همان روز فعال می‌شود؛ روزهای مختلف مستقل‌اند. اگر اولویت خالی بماند، ترتیب ساعت شروع ملاک است.</p>
+                                <div class="smv-admin-field"><label for="smv-fill-mode"><strong>نحوهٔ تکمیل سانس‌ها</strong></label><select id="smv-fill-mode" name="showtime_fill_mode"><option value="ordered" <?php selected((isset($meta['_smv_showtime_fill_mode'][0]) ? $meta['_smv_showtime_fill_mode'][0] : 'ordered'), 'ordered'); ?>>ترتیبی — روزبه‌روز بر اساس اولویت (اول سانس اول هر روز)</option><option value="free" <?php selected((isset($meta['_smv_showtime_fill_mode'][0]) ? $meta['_smv_showtime_fill_mode'][0] : ''), 'free'); ?>>آزاد و همزمان — همهٔ سانس‌های دارای ظرفیت همزمان قابل رزرو (مثلاً دو سانس با هم)</option></select><small>در حالت «آزاد»، اولویت‌بندی کنار می‌رود و مخاطب هر سانسی را که بخواهد انتخاب می‌کند؛ سانس فقط وقتی بسته می‌شود که ظرفیت خودش تکمیل شود.</small></div>
                             </div>
                             <button type="button" class="button smv-primary-button smv-add-showtime" id="smv-add-showtime">
                                 <span class="dashicons dashicons-plus-alt2"></span> افزودن سانس جدید
@@ -1195,6 +1196,7 @@ class SMV_Admin {
         }
 
         update_post_meta($post_id, '_smv_registration_status', $registration_status);
+        update_post_meta($post_id, '_smv_showtime_fill_mode', (isset($_POST['showtime_fill_mode']) && 'free' === sanitize_key(wp_unslash($_POST['showtime_fill_mode']))) ? 'free' : 'ordered');
 
         // گالری
         // گالری: فقط وقتی بازنویسی می‌شود که فرم واقعاً داده‌ای فرستاده باشد
