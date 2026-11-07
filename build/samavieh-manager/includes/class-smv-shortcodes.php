@@ -404,6 +404,7 @@ class SMV_Shortcodes {
                 'id' => $sid,
                 'date' => get_post_meta($sid, '_smv_showtime_date', true),
                 'time' => get_post_meta($sid, '_smv_showtime_time', true),
+                'time_end' => get_post_meta($sid, '_smv_showtime_time_end', true),
                 'venue' => get_post_meta($sid, '_smv_showtime_venue', true),
                 'price' => get_post_meta($sid, '_smv_showtime_price', true),
                 'remaining' => $remaining,
@@ -462,7 +463,7 @@ class SMV_Shortcodes {
                                     <option value="">-- سانس را انتخاب کنید --</option>
                                     <?php foreach ($showtimes as $st) : ?>
                                         <option value="<?php echo esc_attr($st['id']); ?>" data-price="<?php echo esc_attr($st['price']); ?>" data-remaining="<?php echo esc_attr(null === $st['remaining'] ? -1 : $st['remaining']); ?>">
-                                            <?php echo esc_html(SMV_Persian::date($st['date'])); ?><?php echo $st['time'] ? ' - ' . esc_html($st['time']) : ''; ?>
+                                            <?php echo esc_html(SMV_Persian::date($st['date'])); ?><?php echo ($st['time'] || $st['time_end']) ? ' — ' . esc_html(SMV_Persian::time_range($st['time'], $st['time_end'])) : ''; ?>
                                             <?php if (null === $st['remaining']) : ?>
                                                 ( ظرفیت آزاد )
                                             <?php else : ?>

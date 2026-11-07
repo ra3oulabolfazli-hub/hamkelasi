@@ -31,6 +31,9 @@ class SMV_Meta {
             echo '</select>';
         } elseif ('textarea' === $type) {
             echo '<textarea id="' . esc_attr($id) . '" name="' . esc_attr($meta_key) . '" rows="3">' . esc_textarea($value) . '</textarea>';
+        } elseif ('date' === $type) {
+            // تاریخ شمسی: مقدار ذخیره‌شده میلادی است و در فرم شمسی نمایش/دریافت می‌شود.
+            echo '<input type="text" class="smv-date-input" inputmode="numeric" dir="ltr" id="' . esc_attr($id) . '" name="' . esc_attr($meta_key) . '" value="' . esc_attr(SMV_Persian::date_input_value($value)) . '" placeholder="۱۴۰۵/۰۲/۱۲" autocomplete="off" />';
         } else {
             $extra = ('number' === $type) ? ' min="0" step="1"' : '';
             echo '<input type="' . esc_attr($type) . '" id="' . esc_attr($id) . '" name="' . esc_attr($meta_key) . '" value="' . esc_attr($value) . '"' . $extra . ' />';
@@ -129,10 +132,7 @@ class SMV_Meta {
             update_post_meta($post_id, '_smv_' . $key, $value);
         }
         foreach ($date_fields as $key) {
-            $value = isset($_POST['_smv_' . $key]) ? sanitize_text_field(wp_unslash($_POST['_smv_' . $key])) : '';
-            if ($value && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-                $value = '';
-            }
+            $value = isset($_POST['_smv_' . $key]) ? SMV_Persian::parse_date_input(wp_unslash($_POST['_smv_' . $key])) : '';
             update_post_meta($post_id, '_smv_' . $key, $value);
         }
         foreach ($number_fields as $key) {

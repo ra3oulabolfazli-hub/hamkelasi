@@ -62,6 +62,31 @@ function smv_payment_type_label($type) {
  * تبدیل ورودی کاربر به عدد صحیح: ارقام فارسی/عربی، جداکنندهٔ هزارگان، فاصله و واحد پول را پاک می‌کند.
  * (مثلاً «۱۵۰,۰۰۰ تومان» → 150000)
  */
+/**
+ * عنوان فارسی سانس برای پنل و لیست‌های کشویی: «سانس ۱۲ اردیبهشت ۱۴۰۵ — ۱۸:۳۰ تا ۲۰:۰۰»
+ */
+function smv_showtime_title($date, $time = '', $time_end = '') {
+    $title = 'سانس';
+    if ($date) {
+        $title .= ' ' . SMV_Persian::date($date);
+    }
+    $range = SMV_Persian::time_range($time, $time_end);
+    if ($range) {
+        $title .= ' — ' . $range;
+    }
+    return $title;
+}
+
+/**
+ * برچسب ساعت سانس (شروع تا پایان) بر اساس شناسهٔ سانس.
+ */
+function smv_showtime_time_label($showtime_id) {
+    return SMV_Persian::time_range(
+        get_post_meta($showtime_id, '_smv_showtime_time', true),
+        get_post_meta($showtime_id, '_smv_showtime_time_end', true)
+    );
+}
+
 function smv_parse_amount($value) {
     if (is_array($value) || is_object($value)) {
         return 0;

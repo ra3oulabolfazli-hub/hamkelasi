@@ -61,6 +61,29 @@ final class SMV_Plugin {
         global $wpdb;
         $wpdb->query("UPDATE {$wpdb->posts} SET post_status = 'publish' WHERE post_type = 'smv_showtime' AND post_status = 'pending'");
 
+        // یک‌بار: عنوان سانس‌ها به تاریخ شمسی + بازهٔ ساعت تبدیل می‌شود.
+        if (!get_option('smv_showtime_titles_jalali')) {
+            $showtime_ids = get_posts(array(
+                'post_type' => 'smv_showtime',
+                'post_status' => 'any',
+                'numberposts' => 500,
+                'fields' => 'ids',
+                'suppress_filters' => true,
+            ));
+            foreach ((array) $showtime_ids as $showtime_id) {
+                $date = get_post_meta($showtime_id, '_smv_showtime_date', true);
+                $time = get_post_meta($showtime_id, '_smv_showtime_time', true);
+                $time_end = get_post_meta($showtime_id, '_smv_showtime_time_end', true);
+                if ($date) {
+                    $title = smv_showtime_title($date, $time, $time_end);
+                    if ($title && get_the_title($showtime_id) !== $title) {
+                        wp_update_post(array('ID' => $showtime_id, 'post_title' => $title));
+                    }
+                }
+            }
+            update_option('smv_showtime_titles_jalali', 1);
+        }
+
         flush_rewrite_rules(false);
         update_option('smv_db_version', SMV_DB_VERSION);
         delete_option('smv_needs_cap_refresh');

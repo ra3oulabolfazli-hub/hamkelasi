@@ -50,6 +50,7 @@ class SMV_Booking {
                 $id = get_the_ID();
                 $date = get_post_meta($id, '_smv_showtime_date', true);
                 $time = get_post_meta($id, '_smv_showtime_time', true);
+                $time_end = get_post_meta($id, '_smv_showtime_time_end', true);
                 $venue = get_post_meta($id, '_smv_showtime_venue', true);
                 $capacity = absint(get_post_meta($id, '_smv_capacity', true));
                 $price = get_post_meta($id, '_smv_showtime_price', true);
@@ -61,7 +62,7 @@ class SMV_Booking {
                 <article class="smv-showtime-card<?php echo $is_full ? ' is-full' : ''; ?>">
                     <div class="smv-showtime-header">
                         <span class="smv-showtime-date"><?php echo esc_html(SMV_Persian::date($date)); ?></span>
-                        <span class="smv-showtime-time"><?php echo esc_html($time); ?></span>
+                        <span class="smv-showtime-time"><?php echo esc_html(SMV_Persian::time_range($time, $time_end)); ?></span>
                         <?php if ($is_full) : ?><span class="smv-showtime-full">تکمیل</span><?php endif; ?>
                     </div>
                     <div class="smv-showtime-body">

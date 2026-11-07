@@ -376,3 +376,133 @@ body.toplevel_page_smv-dashboard #adminmenu li.toplevel_page_smv-dashboard > a,
 #adminmenu .toplevel_page_smv-dashboard .wp-submenu a .dashicons { font-size:15px !important; width:15px; height:15px; margin-left:3px; vertical-align:-3px; color:#c9a227; opacity:.95; }
 #adminmenu .toplevel_page_smv-dashboard .wp-submenu a:hover .dashicons,
 #adminmenu .toplevel_page_smv-dashboard .wp-submenu li.current a .dashicons { color:#fff; opacity:1; }
+
+/* =====================================================================
+   نسخهٔ ۱.۴.۲ — پیشخوان اصلی وردپرس + ریسپانسیو کامل موبایل
+   ===================================================================== */
+
+/* ---------- پیشخوان اصلی وردپرس = پیشخوان سماویه ---------- */
+#dashboard-widgets-wrap #dashboard-widgets .postbox-container { width:100% !important; float:none; }
+#dashboard-widgets .postbox-container .empty-container,
+#dashboard-widgets .meta-box-sortables.ui-sortable .empty-container { display:none; }
+#dashboard-widgets .postbox { border:0; box-shadow:none; background:transparent; }
+#dashboard-widgets #smv-dashboard-home .postbox-header { display:none; }
+#dashboard-widgets #smv-dashboard-home .inside { margin:0; padding:0; }
+#dashboard-widgets .smv-dashboard-widget .smv-admin-wrap { max-width:none; margin:0; padding:0; }
+#dashboard-widgets .smv-admin-widget { margin:0; }
+#wpbody-content #dashboard-widgets { border:0; padding:0; }
+#dashboard-widgets-wrap .metabox-holder { padding-top:0; }
+body.index-php #wpfooter { display:none; }
+#dashboard-widgets .smv-dashboard-widget .smv-site-header { margin-bottom:20px; }
+
+/* ---------- ریسپانسیو: تبلت ---------- */
+@media (max-width:1100px) {
+  .smv-admin-wrap { padding:0 14px; }
+  .smv-admin-two-col { grid-template-columns:1fr; }
+  .smv-review-grid, .smv-details-grid, .smv-form-grid { grid-template-columns:1fr; }
+  .smv-site-header { flex-direction:column; align-items:flex-start; gap:16px; padding:24px 22px; border-radius:20px; }
+  .smv-site-nav { flex-wrap:wrap; }
+  .smv-admin-heading { flex-direction:column; align-items:flex-start; gap:10px; }
+}
+
+/* ---------- ریسپانسیو: موبایل ---------- */
+@media (max-width:782px) {
+  /* فاصله‌ها و تیترها */
+  .smv-admin-wrap { padding:0 10px; margin-bottom:24px; }
+  .smv-admin-heading h1 { font-size:21px; }
+  .smv-admin-heading p, .smv-admin-heading .smv-admin-kicker { font-size:11px; }
+  .smv-stat-grid { grid-template-columns:1fr 1fr !important; gap:10px; }
+  .smv-stat-card { padding:16px 16px; border-radius:16px; }
+  .smv-stat-card strong { font-size:26px; }
+  .smv-quick-grid { grid-template-columns:1fr 1fr !important; }
+  .smv-quick-grid a { padding:14px; }
+  .smv-quick-grid small { display:none; }
+  .smv-admin-card { padding:16px 14px; border-radius:16px; }
+
+  /* تب‌های ویرایشگر */
+  .smv-editor-tabs { gap:4px; padding:5px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .smv-editor-tabs::-webkit-scrollbar { display:none; }
+  .smv-editor-tabs .tab-btn { white-space:nowrap; font-size:11px; padding:9px 12px; }
+
+  /* فیلدهای فرم */
+  .smv-settings-grid { grid-template-columns:1fr !important; }
+  .smv-admin-field input:not([type=checkbox]):not([type=radio]),
+  .smv-admin-field select,
+  .smv-admin-field textarea { font-size:16px; min-height:44px; } /* جلوگیری از زوم خودکار iOS */
+  .smv-payment-options { flex-direction:column; gap:8px; align-items:flex-start; }
+  .smv-payment-options label { width:100%; }
+
+  /* سانس‌ها */
+  .smv-showtime-toolbar { flex-direction:column; align-items:stretch; }
+  .smv-showtime-toolbar .smv-add-showtime { width:100%; justify-content:center; }
+  .smv-showtime-grid { grid-template-columns:1fr !important; gap:8px; }
+  .smv-showtime-item-head { gap:8px; }
+  .smv-showtime-title { font-size:11px; }
+  .smv-showtime-capacity { font-size:9px; }
+  .smv-remove-showtime { width:100%; justify-content:center; margin-top:6px; }
+  .smv-showtime-grid label { font-size:11px; }
+  .smv-showtime-grid input { font-size:16px; min-height:44px; }
+
+  /* نوار ذخیره */
+  .smv-submit-bar { position:sticky; bottom:0; border-radius:14px 14px 0 0; padding:10px 12px; }
+  .smv-submit-bar-info { display:none; }
+  .smv-submit-bar-actions { width:100%; }
+  .smv-submit-bar-actions .button { flex:1; text-align:center; justify-content:center; display:inline-flex; align-items:center; }
+  .smv-submit-bar .button-primary { min-height:46px; font-size:14px; }
+
+  /* جدول‌ها به کارت تبدیل می‌شوند */
+  .smv-table-wrap { border:0; background:transparent; border-radius:0; overflow:visible; }
+  .smv-table-wrap table { display:block; }
+  .smv-table-wrap table thead { display:none; }
+  .smv-table-wrap table tbody { display:block; }
+  .smv-table-wrap table tr { display:block; background:#fff; border:1px solid #e9e5d9; border-radius:14px; margin-bottom:10px; padding:8px 12px; box-shadow:0 3px 12px rgba(20,45,40,.04); }
+  .smv-table-wrap table td { display:flex; align-items:center; justify-content:space-between; gap:12px; border:0 !important; padding:6px 0 !important; font-size:12px; text-align:left; }
+  .smv-table-wrap table td:before { content:attr(data-label); flex:0 0 auto; font-size:10px; font-weight:800; color:#7a8580; }
+  .smv-table-wrap table td[data-label=""]:before,
+  .smv-table-wrap table td:not([data-label]):before { content:""; }
+  .smv-table-wrap table td > * { max-width:70%; }
+  .smv-table-wrap table td a.button, .smv-table-wrap table td .button { font-size:11px; padding:3px 9px; }
+  .smv-table-wrap table td[data-label="عملیات"] { flex-wrap:wrap; justify-content:flex-start; }
+  .smv-table-wrap table td[data-label="عملیات"]:before { width:100%; margin-bottom:6px; }
+
+  /* جدول تئاترها (بدون table-wrap) */
+  .smv-admin-card > table.smv-registration-table { display:block; }
+  .smv-admin-card > table.smv-registration-table thead { display:none; }
+  .smv-admin-card > table.smv-registration-table tbody { display:block; }
+  .smv-admin-card > table.smv-registration-table tr { display:block; border:1px solid #e9e5d9; border-radius:14px; margin-bottom:10px; padding:8px 12px; }
+  .smv-admin-card > table.smv-registration-table td { display:flex; justify-content:space-between; gap:12px; border:0 !important; padding:6px 0 !important; font-size:12px; text-align:left; }
+  .smv-admin-card > table.smv-registration-table td:before { content:attr(data-label); font-size:10px; font-weight:800; color:#7a8580; }
+  .smv-admin-card > table.smv-registration-table td[data-label="پوستر"] { display:none; }
+
+  /* فیلترها */
+  .smv-filter-bar { display:flex; flex-direction:column; gap:8px; }
+  .smv-filter-bar input, .smv-filter-bar select, .smv-filter-bar button { width:100% !important; min-height:44px; font-size:14px; }
+
+  /* جزئیات ثبت‌نام */
+  .smv-review-grid { grid-template-columns:1fr !important; }
+  .smv-review-details > div { flex-direction:column; align-items:flex-start; gap:2px; }
+  .smv-receipt-preview img { max-width:100%; height:auto; }
+  .smv-back-link { font-size:11px; }
+
+  /* اعلان‌ها و پیام‌ها */
+  .smv-inline-alert { font-size:11px; line-height:1.9; }
+  .smv-pagination { flex-direction:column; gap:8px; align-items:flex-start; }
+
+  /* ویجت پیشخوان */
+  #dashboard-widgets .smv-dashboard-widget .smv-stat-grid { grid-template-columns:1fr 1fr !important; }
+  #dashboard-widgets-wrap { margin-right:0; }
+}
+
+@media (max-width:480px) {
+  .smv-stat-grid { grid-template-columns:1fr !important; }
+  .smv-quick-grid { grid-template-columns:1fr !important; }
+  .smv-showtime-item { padding:12px; }
+  .smv-site-title strong { font-size:18px; }
+  .smv-site-header { padding:18px 16px; }
+  .smv-admin-card { padding:14px 12px; }
+}
+
+/* ---------- ورودی تاریخ شمسی ---------- */
+input.smv-date-input { direction:ltr; text-align:left; font-variant-numeric:tabular-nums; letter-spacing:.5px; }
+input.smv-date-input:invalid { border-color:#d98b80; }
+.smv-admin-field label small { display:block; color:#8d9692; font-weight:400; font-size:9px; margin-top:3px; }
