@@ -197,6 +197,33 @@ class SMV_Persian {
         return sprintf('%02d:%02d', $hour, $minute);
     }
 
+    /**
+     * نام روز هفتهٔ یک تاریخ میلادی ذخیره‌شده («2026-05-05» → «سه‌شنبه»).
+     */
+    public static function weekday_name($date) {
+        $date = trim((string) self::english_digits((string) $date));
+        if (!preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})/', $date, $m)) {
+            return '';
+        }
+        try {
+            $dt = new DateTimeImmutable(sprintf('%04d-%02d-%02d', (int) $m[1], (int) $m[2], (int) $m[3]), wp_timezone());
+        } catch (Exception $exception) {
+            return '';
+        }
+        $names = array('یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'); // 0=یکشنبه در قالب w
+        return $names[(int) $dt->format('w')];
+    }
+
+    /** تاریخ همراه با نام روز هفته: «سه‌شنبه ۱۵ اردیبهشت ۱۴۰۵» */
+    public static function date_with_weekday($date) {
+        $formatted = self::date($date);
+        if ('' === $formatted) {
+            return '';
+        }
+        $weekday = self::weekday_name($date);
+        return $weekday ? ($weekday . ' ' . $formatted) : $formatted;
+    }
+
     /** ساعت شروع و پایان سانس به‌صورت ۲۴ ساعته: «۱۸:۳۰ تا ۲۰:۰۰» */
     public static function time_range($start, $end = '') {
         $start = self::normalize_time($start);

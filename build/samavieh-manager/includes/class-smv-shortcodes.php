@@ -459,7 +459,29 @@ class SMV_Shortcodes {
                     <?php if (!empty($state['amount'])) : ?><div class="smv-success-amount">مبلغ: <strong><?php echo esc_html(SMV_Persian::money($state['amount'])); ?></strong></div><?php endif; ?>
                     <div class="smv-tracking-code-box"><small>کد پیگیری شما</small><code dir="ltr"><?php echo esc_html($state['tracking_code']); ?></code><button type="button" class="smv-copy-button" data-smv-copy="<?php echo esc_attr($state['tracking_code']); ?>"><?php echo smv_icon('copy'); ?> کپی کد</button></div>
                     <div class="smv-important-note"><?php echo smv_icon('alert'); ?><span>این کد و شماره تماس ثبت‌شده را نزد خود نگه دارید. برای مشاهدهٔ نتیجهٔ بررسی به هر دو نیاز دارید.</span></div>
-                    <div class="smv-button-row smv-justify-center"><a class="smv-button smv-button-primary" href="<?php echo esc_url(self::tracking_url()); ?>">پیگیری وضعیت ثبت‌نام <?php echo smv_icon('arrow'); ?></a><button type="button" class="smv-button smv-button-light" onclick="window.print()">چاپ کد</button></div>
+                    <div class="smv-button-row smv-justify-center"><a class="smv-button smv-button-primary" href="<?php echo esc_url(self::tracking_url()); ?>">پیگیری وضعیت ثبت‌نام <?php echo smv_icon('arrow'); ?></a><button type="button" class="smv-button smv-button-light" onclick="window.print()">🖨 چاپ برگهٔ ثبت‌نام</button></div>
+
+                    <!-- برگهٔ کادربندی‌شدهٔ مناسب چاپ (فقط هنگام چاپ دیده می‌شود) -->
+                    <div class="smv-print-ticket" aria-hidden="true">
+                        <div class="smv-print-frame">
+                            <div class="smv-print-head">
+                                <img src="<?php echo esc_url(SMV_URL . 'assets/images/samavieh-logo.png'); ?>" alt="" />
+                                <div><strong>گروه فرهنگی هنری سماویه</strong><span>برگهٔ ثبت‌نام تئاتر</span></div>
+                            </div>
+                            <h3 class="smv-print-theatre"><?php echo esc_html(!empty($state['theatre']) ? $state['theatre'] : ''); ?></h3>
+                            <table class="smv-print-table">
+                                <?php if (!empty($state['name'])) : ?><tr><th>نام ثبت‌نام‌کننده</th><td><?php echo esc_html($state['name']); ?></td></tr><?php endif; ?>
+                                <?php if (!empty($state['showtime'])) : ?><tr><th>سانس</th><td><?php echo esc_html($state['showtime']); ?></td></tr><?php endif; ?>
+                                <?php if (!empty($state['payment_type'])) : ?><tr><th>روش پرداخت</th><td><?php echo esc_html($state['payment_type']); ?></td></tr><?php endif; ?>
+                                <?php if (isset($state['people_count'])) : ?><tr><th>تعداد افراد</th><td><?php echo esc_html(SMV_Persian::digits($state['people_count'])); ?> نفر<?php echo !empty($state['companions']) ? ' (' . esc_html(smv_companions_label($state['companions'])) . ')' : ' (بدون همراه)'; ?></td></tr><?php endif; ?>
+                                <?php if (!empty($state['amount'])) : ?><tr><th>مبلغ</th><td><?php echo esc_html(SMV_Persian::money($state['amount'])); ?></td></tr><?php endif; ?>
+                                <?php if (!empty($state['phone'])) : ?><tr><th>شماره تماس</th><td dir="ltr"><?php echo esc_html($state['phone']); ?></td></tr><?php endif; ?>
+                            </table>
+                            <div class="smv-print-code"><small>کد پیگیری</small><code dir="ltr"><?php echo esc_html($state['tracking_code']); ?></code></div>
+                            <p class="smv-print-note">این برگه را چاپ کنید و هنگام مراجعه همراه داشته باشید. برای پیگیری وضعیت ثبت‌نام، کد پیگیری و شماره تماس لازم است.</p>
+                            <div class="smv-print-foot">سماویه — هنر، اندیشه و معنویت</div>
+                        </div>
+                    </div>
                 </div>
             <?php elseif (!smv_theatre_registration_open($theatre_id)) : ?>
                 <div class="smv-closed-box"><?php echo smv_icon('ticket'); ?><div><h2>ثبت‌نام این اجرا فعال نیست</h2><p>ثبت‌نام بسته شده یا ظرفیت تکمیل شده است. برای اطلاعات بیشتر می‌توانید با مدیریت سماویه تماس بگیرید.</p></div></div>
@@ -490,12 +512,12 @@ class SMV_Shortcodes {
                                 <label for="smv-showtime-<?php echo esc_attr($theatre_id); ?>">انتخاب سانس <b>*</b></label>
                                 <select name="showtime_id" id="smv-showtime-<?php echo esc_attr($theatre_id); ?>" required>
                                     <?php if (empty($active_ids_by_day)) : ?><option value="">— همهٔ سانس‌ها تکمیل ظرفیت هستند —</option><?php endif; ?>
-                                    <?php $day_number = 0; $smv_default_selected_done = false; foreach ($showtimes_by_day as $day_date => $day_items) : $day_number++; ?>
-                                        <optgroup label="روز <?php echo esc_attr(SMV_Persian::digits($day_number)); ?> — <?php echo esc_attr(SMV_Persian::date($day_date)); ?>">
+                                    <?php $day_number = 0; $smv_default_selected_done = false; $smv_preferred_showtime = !empty($old['showtime_id']) ? absint($old['showtime_id']) : (isset($_GET['smv_showtime']) ? absint(wp_unslash($_GET['smv_showtime'])) : 0); foreach ($showtimes_by_day as $day_date => $day_items) : $day_number++; ?>
+                                        <optgroup label="روز <?php echo esc_attr(SMV_Persian::digits($day_number)); ?> — <?php echo esc_attr(SMV_Persian::date_with_weekday($day_date)); ?>">
                                         <?php foreach ($day_items as $st) : ?>
-                                            <?php $is_default = ('active' === $st['state'] && !$smv_default_selected_done); if ($is_default) { $smv_default_selected_done = true; } ?>
+                                            <?php $is_default = false; if (!$smv_default_selected_done && 'active' === $st['state']) { $is_default = $smv_preferred_showtime ? ((int) $st['id'] === $smv_preferred_showtime) : true; } if ($is_default) { $smv_default_selected_done = true; } ?>
                                             <option value="<?php echo esc_attr($st['id']); ?>" data-price="<?php echo esc_attr($st['price']); ?>" data-state="<?php echo esc_attr($st['state']); ?>" data-remaining="<?php echo esc_attr(null === $st['remaining'] ? -1 : $st['remaining']); ?>" <?php echo 'active' === $st['state'] ? '' : 'disabled'; ?> <?php echo $is_default ? 'selected' : ''; ?>>
-                                                اولویت <?php echo esc_html(SMV_Persian::digits($st['priority'])); ?> — <?php echo esc_html(SMV_Persian::date($st['date'])); ?><?php echo ($st['time'] || $st['time_end']) ? ' — ' . esc_html(SMV_Persian::time_range($st['time'], $st['time_end'])) : ''; ?>
+                                                اولویت <?php echo esc_html(SMV_Persian::digits($st['priority'])); ?> — <?php echo esc_html(SMV_Persian::date_with_weekday($st['date'])); ?><?php echo ($st['time'] || $st['time_end']) ? ' — ' . esc_html(SMV_Persian::time_range($st['time'], $st['time_end'])) : ''; ?>
                                                 <?php if ('full' === $st['state']) : ?>
                                                     ( تکمیل ظرفیت )
                                                 <?php elseif ('waiting' === $st['state']) : ?>
@@ -510,7 +532,7 @@ class SMV_Shortcodes {
                                         </optgroup>
                                     <?php endforeach; ?>
                                 </select>
-                                <small><?php echo 'free' === $fill_mode ? 'تکمیل سانس‌ها آزاد و همزمان است؛ هر سانسی که ظرفیت دارد را می‌توانید انتخاب کنید.' : 'سانس‌ها روزبه‌روز و داخل هر روز به ترتیب اولویت پر می‌شوند؛ در هر روز فقط سانس فعال قابل انتخاب است و روزهای مختلف مستقل از هم هستند.'; ?></small>
+                                <small><?php echo 'mixed' === $fill_mode ? 'حالت تکمیل هر روز جداست: بعضی روزها ترتیبی (فقط سانس فعالِ همان روز) و بعضی روزها آزاد و همزمان‌اند؛ سانس موردنظر را از فهرست انتخاب کنید.' : ('free' === $fill_mode ? 'تکمیل سانس‌ها آزاد و همزمان است؛ هر سانسی که ظرفیت دارد را می‌توانید انتخاب کنید.' : 'سانس‌ها روزبه‌روز و داخل هر روز به ترتیب اولویت پر می‌شوند؛ در هر روز فقط سانس فعال قابل انتخاب است و روزهای مختلف مستقل از هم هستند.'); ?></small>
                             </div>
                         <?php endif; ?>
 
@@ -621,6 +643,20 @@ class SMV_Shortcodes {
                     if (paymentSelect) {
                         paymentSelect.addEventListener('change', toggleFields);
                     }
+                    // اگر از دکمهٔ «ثبت‌نام در این سانس» آمده باشد، همان سانس خودکار انتخاب می‌شود.
+                    try {
+                        var requestedShowtime = new URLSearchParams(window.location.search).get('smv_showtime');
+                        var stSelect = document.getElementById('smv-showtime-<?php echo esc_js($theatre_id); ?>');
+                        if (requestedShowtime && stSelect) {
+                            for (var oi = 0; oi < stSelect.options.length; oi++) {
+                                if (stSelect.options[oi].value === requestedShowtime && !stSelect.options[oi].disabled) {
+                                    stSelect.value = requestedShowtime;
+                                    stSelect.dispatchEvent(new Event('change'));
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (e) {}
                     var showtimeSelect = document.getElementById('smv-showtime-<?php echo esc_js($theatre_id); ?>');
                     var companionsSelect = document.getElementById('smv-companions-<?php echo esc_js($theatre_id); ?>');
                     function syncFee() {

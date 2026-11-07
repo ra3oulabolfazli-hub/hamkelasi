@@ -554,3 +554,28 @@ a.smv-contact-card:hover { border-color: #c9a45f; box-shadow: var(--smv-shadow);
 .smv-social-tile:hover .smv-brand-img{transform:scale(1.08) rotate(-2deg)}
 .smv-card-image--portrait{aspect-ratio:3/4}
 .smv-card-image--portrait img{width:100%;height:100%;object-fit:cover}
+
+/* ===== نسخه ۱.۱۱.۰: روز هفته، برچسب حالت روز، برگهٔ چاپ ===== */
+.smv-day-mode{display:inline-block;font-size:10px;font-weight:700;border-radius:999px;padding:2px 9px;margin-inline-start:6px;vertical-align:middle}
+.smv-day-mode--free{background:#e7f7ee;color:#14743c;border:1px solid #bfe6cd}
+.smv-day-mode--ordered{background:#fdf4e2;color:#8a5a12;border:1px solid #ecd9ac}
+.smv-print-ticket{display:none}
+@media print{
+  body *{visibility:hidden !important}
+  .smv-print-ticket,.smv-print-ticket *{visibility:visible !important}
+  .smv-print-ticket{display:block !important;position:fixed;inset:10mm 12mm auto 12mm;direction:rtl}
+  .smv-print-frame{border:3px double #123f3a;border-radius:10px;padding:22px 26px;background:#fff;color:#123f3a;font-family:inherit}
+  .smv-print-head{display:flex;align-items:center;gap:12px;border-bottom:1.5px solid #c9a94e;padding-bottom:12px}
+  .smv-print-head img{width:52px;height:52px;object-fit:contain}
+  .smv-print-head strong{display:block;font-size:17px}
+  .smv-print-head span{font-size:12px;color:#6b7a72}
+  .smv-print-theatre{text-align:center;font-size:19px;margin:16px 0 10px}
+  .smv-print-table{width:100%;border-collapse:collapse;font-size:13px}
+  .smv-print-table th,.smv-print-table td{border:1px solid #b9c8bf;padding:7px 10px;text-align:right}
+  .smv-print-table th{width:34%;background:#f2f6f2;color:#33523f}
+  .smv-print-code{margin:18px auto 8px;text-align:center;border:2px dashed #c9a94e;border-radius:10px;padding:10px;width:70%}
+  .smv-print-code small{display:block;font-size:11px;color:#6b7a72}
+  .smv-print-code code{font-size:30px;font-weight:800;letter-spacing:4px;color:#123f3a}
+  .smv-print-note{text-align:center;font-size:11px;color:#51635a;margin:12px 0 6px}
+  .smv-print-foot{text-align:center;font-size:11px;color:#8a948f;border-top:1px solid #d8e0d8;padding-top:8px}
+}

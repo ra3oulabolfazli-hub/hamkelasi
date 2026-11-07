@@ -4,7 +4,7 @@ Tags: theatre, booking, registration, persian, rtl, elementor, zarinpal, pdf
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.10.0
+Stable tag: 1.11.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,12 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 پس از وارد کردن کد مرچنت در تنظیمات و فعال کردن روش «پرداخت آنلاین» برای اجرا، دکمهٔ پرداخت در دسترس است.
 
 == Changelog ==
+
+= 1.11.0 =
+* Day-of-week name (e.g. Tuesday) shown next to every showtime date in cards, the registration selector and the admin editor.
+* Fill mode can now be “mixed”: each day is independently ordered (priority) or free/simultaneous, chosen per day in the theatre editor.
+* Clicking “Register for this showtime” pre-selects that showtime automatically in the registration form.
+* The success “print code” button now prints a framed, print-ready registration sheet (theatre, showtime, people, amount and the tracking code).
 
 = 1.10.0 =
 * Fixed “registration fee not specified” error: a showtime price stored as 0/empty now correctly falls back to the theatre price for the fixed-fee payment method.

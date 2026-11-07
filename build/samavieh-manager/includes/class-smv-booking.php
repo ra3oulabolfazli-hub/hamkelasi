@@ -60,7 +60,9 @@ class SMV_Booking {
         ksort($day_groups);
         ob_start();
         if ($ordered_posts) :
-            if ('free' === $fill_mode) {
+            if ('mixed' === $fill_mode) {
+                echo '<p class="smv-showtime-order-note">حالت تکمیل سانس‌ها در این اجرا <strong>برای هر روز جداست</strong>: بعضی روزها <strong>ترتیبی</strong> (بر اساس اولویت) و بعضی روزها <strong>آزاد و همزمان</strong> هستند؛ حالت هر روز کنار عنوان همان روز نوشته شده است.</p>';
+            } elseif ('free' === $fill_mode) {
                 echo '<p class="smv-showtime-order-note">تکمیل سانس‌ها در این اجرا <strong>آزاد و همزمان</strong> است؛ هر سانسی که ظرفیت دارد قابل انتخاب است و می‌توانید هر کدام را که می‌خواهید رزرو کنید.</p>';
             } else {
                 echo '<p class="smv-showtime-order-note">سانس‌ها <strong>روزبه‌روز</strong> و داخل هر روز <strong>به ترتیب اولویت</strong> پر می‌شوند؛ در هر روز ابتدا سانس با اولویت اول فعال است و پس از تکمیل ظرفیت آن، سانس بعدیِ همان روز فعال می‌شود. روزهای مختلف مستقل از هم هستند.</p>';
@@ -69,7 +71,8 @@ class SMV_Booking {
             foreach ($day_groups as $day_date => $day_posts) :
                 $day_number++;
                 echo '<div class="smv-showtime-day" data-smv-day="' . esc_attr($day_date) . '">';
-                echo '<h4 class="smv-showtime-day-title"><span>روز ' . esc_html(SMV_Persian::digits($day_number)) . '</span> ' . esc_html(SMV_Persian::date($day_date)) . '</h4>';
+                $day_mode = $theatre_id ? smv_day_fill_mode($theatre_id, $day_date) : $fill_mode;
+                echo '<h4 class="smv-showtime-day-title"><span>روز ' . esc_html(SMV_Persian::digits($day_number)) . '</span> ' . esc_html(SMV_Persian::date_with_weekday($day_date)) . ' <small class="smv-day-mode smv-day-mode--' . esc_attr($day_mode) . '">' . ('free' === $day_mode ? 'این روز آزاد و همزمان است' : 'این روز ترتیبی (اولویت‌دار) است') . '</small></h4>';
                 echo '<div class="smv-showtime-grid smv-columns-' . esc_attr($columns) . '">';
                 $priority = 0;
                 foreach ($day_posts as $showtime_post) :
@@ -87,12 +90,13 @@ class SMV_Booking {
                 $percent = ($capacity > 0) ? min(100, round(($booked / $capacity) * 100)) : 0;
                 $is_full = (null !== $remaining && $remaining <= 0);
                 $state = $theatre_id ? smv_showtime_state($id, $theatre_id) : ($is_full ? 'full' : 'active');
-                $state_label = 'full' === $state ? 'تکمیل ظرفیت' : ('active' === $state ? ('free' === $fill_mode ? 'قابل ثبت‌نام (همزمان)' : 'در حال ثبت‌نام') : 'در انتظار تکمیل سانس قبلیِ همین روز');
+                $card_day_mode = $theatre_id ? smv_day_fill_mode($theatre_id, (string) $date) : $fill_mode;
+                $state_label = 'full' === $state ? 'تکمیل ظرفیت' : ('active' === $state ? ('free' === $card_day_mode ? 'قابل ثبت‌نام (همزمان)' : 'در حال ثبت‌نام') : 'در انتظار تکمیل سانس قبلیِ همین روز');
                 ?>
                 <article class="smv-showtime-card<?php echo $is_full ? ' is-full' : ''; ?> is-<?php echo esc_attr($state); ?>" data-smv-showtime-state="<?php echo esc_attr($state); ?>">
                     <div class="smv-showtime-header">
                         <span class="smv-showtime-priority">اولویت <?php echo esc_html(SMV_Persian::digits($priority)); ?></span>
-                        <span class="smv-showtime-date"><?php echo esc_html(SMV_Persian::date($date)); ?></span>
+                        <span class="smv-showtime-date"><?php echo esc_html(SMV_Persian::date_with_weekday($date)); ?></span>
                         <span class="smv-showtime-time"><?php echo esc_html(SMV_Persian::time_range($time, $time_end)); ?></span>
                         <span class="smv-showtime-state smv-state-<?php echo esc_attr($state); ?>"><?php echo esc_html($state_label); ?></span>
                     </div>
@@ -116,7 +120,7 @@ class SMV_Booking {
                         <?php elseif ('waiting' === $state) : ?>
                             <button type="button" class="smv-button smv-button-disabled" disabled>🔒 پس از تکمیل سانس قبلی فعال می‌شود</button>
                         <?php elseif ($registration_target) : ?>
-                            <a href="<?php echo esc_url($registration_target . '#smv-registration'); ?>" class="smv-button smv-button-primary">ثبت‌نام در این سانس</a>
+                            <a href="<?php echo esc_url($registration_target . (false === strpos($registration_target, '?') ? '?' : '&') . 'smv_showtime=' . $id . '#smv-registration'); ?>" class="smv-button smv-button-primary">ثبت‌نام در این سانس</a>
                         <?php endif; ?>
                     </div>
                 </article>

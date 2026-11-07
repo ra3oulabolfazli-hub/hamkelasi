@@ -281,6 +281,8 @@ class SMV_Forms {
             'tracking_code' => $tracking_code,
             'theatre' => get_the_title($theatre_id),
             'showtime' => $showtime_id ? get_the_title($showtime_id) : '',
+            'name' => trim($old['first_name'] . ' ' . $old['last_name']),
+            'phone' => $phone,
             'payment_type' => smv_payment_type_label($payment_type),
             'companions' => $companions,
             'people_count' => $people_count,

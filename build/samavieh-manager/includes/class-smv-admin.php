@@ -720,7 +720,7 @@ class SMV_Admin {
                             <div class="smv-showtime-toolbar-text">
                                 <h3><span class="dashicons dashicons-calendar-alt"></span> سانس‌ها و ظرفیت</h3>
                                 <p>برای هر اجرا می‌توانید چند سانس با تاریخ، ساعت، ظرفیت و قیمت جداگانه تعریف کنید. تغییرات با دکمهٔ «<?php echo esc_html($button_text); ?>» ذخیره می‌شود. <strong>سانس‌ها روزبه‌روز پر می‌شوند:</strong> داخل هر روز، سانس با «اولویت» کمتر (۱) اول پر می‌شود و بعد از تکمیل ظرفیتش، سانس بعدیِ همان روز فعال می‌شود؛ روزهای مختلف مستقل‌اند. اگر اولویت خالی بماند، ترتیب ساعت شروع ملاک است.</p>
-                                <div class="smv-admin-field"><label for="smv-fill-mode"><strong>نحوهٔ تکمیل سانس‌ها</strong></label><select id="smv-fill-mode" name="showtime_fill_mode"><option value="ordered" <?php selected((isset($meta['_smv_showtime_fill_mode'][0]) ? $meta['_smv_showtime_fill_mode'][0] : 'ordered'), 'ordered'); ?>>ترتیبی — روزبه‌روز بر اساس اولویت (اول سانس اول هر روز)</option><option value="free" <?php selected((isset($meta['_smv_showtime_fill_mode'][0]) ? $meta['_smv_showtime_fill_mode'][0] : ''), 'free'); ?>>آزاد و همزمان — همهٔ سانس‌های دارای ظرفیت همزمان قابل رزرو (مثلاً دو سانس با هم)</option></select><small>در حالت «آزاد»، اولویت‌بندی کنار می‌رود و مخاطب هر سانسی را که بخواهد انتخاب می‌کند؛ سانس فقط وقتی بسته می‌شود که ظرفیت خودش تکمیل شود.</small></div>
+                                <div class="smv-admin-field"><label for="smv-fill-mode"><strong>نحوهٔ تکمیل سانس‌ها</strong></label><select id="smv-fill-mode" name="showtime_fill_mode"><option value="ordered" <?php selected((isset($meta['_smv_showtime_fill_mode'][0]) ? $meta['_smv_showtime_fill_mode'][0] : 'ordered'), 'ordered'); ?>>ترتیبی — روزبه‌روز بر اساس اولویت (اول سانس اول هر روز)</option><option value="free" <?php selected((isset($meta['_smv_showtime_fill_mode'][0]) ? $meta['_smv_showtime_fill_mode'][0] : ''), 'free'); ?>>آزاد و همزمان — همهٔ سانس‌های دارای ظرفیت همزمان قابل رزرو (مثلاً دو سانس با هم)</option><option value="mixed" <?php selected((isset($meta['_smv_showtime_fill_mode'][0]) ? $meta['_smv_showtime_fill_mode'][0] : ''), 'mixed'); ?>>ترکیبی — هر روز جدا: بعضی روزها ترتیبی (اولویت‌دار)، بعضی روزها آزاد</option></select><small>در حالت «آزاد»، اولویت‌بندی کنار می‌رود و مخاطب هر سانسی را که بخواهد انتخاب می‌کند؛ سانس فقط وقتی بسته می‌شود که ظرفیت خودش تکمیل شود. در حالت «ترکیبی»، برای هر سانس فیلد «حالت تکمیل روز» را مشخص کنید: همهٔ سانس‌های یک روز از همان حالت پیروی می‌کنند (مثلاً جمعه‌ها آزاد، بقیهٔ روزها ترتیبی).</small></div>
                             </div>
                             <button type="button" class="button smv-primary-button smv-add-showtime" id="smv-add-showtime">
                                 <span class="dashicons dashicons-plus-alt2"></span> افزودن سانس جدید
@@ -749,7 +749,7 @@ class SMV_Admin {
                                 <div class="smv-showtime-item" data-id="<?php echo esc_attr($st_id); ?>" data-mode="existing">
                                     <div class="smv-showtime-item-head">
                                         <span class="smv-showtime-num"><?php echo esc_html(SMV_Persian::digits($st_index)); ?></span>
-                                        <span class="smv-showtime-title">سانس <?php echo esc_html(SMV_Persian::date($st_date)); ?><?php echo ($st_time || $st_time_end) ? ' — ' . esc_html(SMV_Persian::time_range($st_time, $st_time_end)) : ''; ?></span>
+                                        <span class="smv-showtime-title">سانس <?php echo esc_html(SMV_Persian::date_with_weekday($st_date)); ?><?php echo ($st_time || $st_time_end) ? ' — ' . esc_html(SMV_Persian::time_range($st_time, $st_time_end)) : ''; ?></span>
                                         <span class="smv-showtime-capacity">رزرو‌شده: <?php echo esc_html(SMV_Persian::digits($st_booked)); ?><?php echo $st_capacity ? ' از ' . esc_html(SMV_Persian::digits($st_capacity)) : ''; ?><?php if ($st_manual_booked) : ?> <small>(سایت: <?php echo esc_html(SMV_Persian::digits($st_online_booked)); ?> + دستی: <?php echo esc_html(SMV_Persian::digits($st_manual_booked)); ?>)</small><?php endif; ?></span>
                                         <?php if ('publish' !== $st_status) : ?><span class="smv-showtime-status"><?php echo esc_html(smv_post_status_label($st_status)); ?></span><?php endif; ?>
                                         <button type="button" class="smv-remove-showtime" data-id="<?php echo esc_attr($st_id); ?>" data-mode="existing" title="حذف این سانس">
@@ -763,6 +763,7 @@ class SMV_Admin {
                                         <label>اولویت در روز (۱=اول پر می‌شود) <input type="number" min="1" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][priority]" value="<?php echo absint(get_post_meta($st_id, '_smv_priority', true)) ? esc_attr(absint(get_post_meta($st_id, '_smv_priority', true))) : ''; ?>" placeholder="خودکار (ساعت)" /></label>
                                         <label>ظرفیت کل (نفر) <input type="number" min="0" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][capacity]" value="<?php echo $st_capacity ? esc_attr($st_capacity) : ''; ?>" placeholder="نامحدود" /></label>
                                         <label>ثبت‌نام دستی (نفر) <input type="number" min="0" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][manual_booked]" value="<?php echo $st_manual_booked ? esc_attr($st_manual_booked) : ''; ?>" placeholder="۰" title="تعداد ثبت‌نام‌های خارج از سایت (حضوری/تلفنی)؛ به ثبت‌نام‌های سایت اضافه و از ظرفیت کم می‌شود." /></label>
+                                        <label>حالت تکمیل روزِ این سانس <select name="showtimes[<?php echo esc_attr($st_id); ?>][day_mode]"><option value="ordered" <?php selected(smv_day_fill_mode($theatre_id, $st_date), 'ordered'); ?>>ترتیبی — با اولویت پر می‌شود</option><option value="free" <?php selected(smv_day_fill_mode($theatre_id, $st_date), 'free'); ?>>آزاد — همزمان با بقیهٔ سانس‌های همان روز</option></select></label>
                                         <label>قیمت (تومان) <input type="number" min="0" step="1000" name="showtimes[<?php echo esc_attr($st_id); ?>][price]" value="<?php echo $st_price ? esc_attr($st_price) : ''; ?>" placeholder="۰ = قیمت اجرا" /></label>
                                         <label class="smv-showtime-venue">محل اجرا <input type="text" name="showtimes[<?php echo esc_attr($st_id); ?>][venue]" value="<?php echo esc_attr($st_venue); ?>" placeholder="مثلاً سالن اصلی" /></label>
                                     </div>
@@ -838,6 +839,7 @@ class SMV_Admin {
                         <label>اولویت در روز (۱=اول پر می‌شود) <input type="number" min="1" step="1" name="new_showtime[__INDEX__][priority]" value="" placeholder="خودکار (ساعت)" /></label>
                         <label>ظرفیت کل (نفر) <input type="number" min="0" step="1" name="new_showtime[__INDEX__][capacity]" value="" placeholder="نامحدود" /></label>
                         <label>ثبت‌نام دستی (نفر) <input type="number" min="0" step="1" name="new_showtime[__INDEX__][manual_booked]" value="" placeholder="۰" title="رزروهای خارج از سایت (حضوری/تلفنی)؛ از ظرفیت کم می‌شود." /></label>
+                        <label>حالت تکمیل روزِ این سانس <select name="new_showtime[__INDEX__][day_mode]"><option value="ordered">ترتیبی — با اولویت پر می‌شود</option><option value="free">آزاد — همزمان با بقیهٔ سانس‌های همان روز</option></select></label>
                         <label>قیمت (تومان) <input type="number" min="0" step="1000" name="new_showtime[__INDEX__][price]" value="" placeholder="۰ = قیمت اجرا" /></label>
                         <label class="smv-showtime-venue">محل اجرا <input type="text" name="new_showtime[__INDEX__][venue]" value="" placeholder="مثلاً سالن اصلی" /></label>
                     </div>
@@ -1265,7 +1267,8 @@ class SMV_Admin {
         }
 
         update_post_meta($post_id, '_smv_registration_status', $registration_status);
-        update_post_meta($post_id, '_smv_showtime_fill_mode', (isset($_POST['showtime_fill_mode']) && 'free' === sanitize_key(wp_unslash($_POST['showtime_fill_mode']))) ? 'free' : 'ordered');
+        $posted_fill_mode = isset($_POST['showtime_fill_mode']) ? sanitize_key(wp_unslash($_POST['showtime_fill_mode'])) : 'ordered';
+        update_post_meta($post_id, '_smv_showtime_fill_mode', in_array($posted_fill_mode, array('free', 'mixed'), true) ? $posted_fill_mode : 'ordered');
 
         // گالری
         // گالری: فقط وقتی بازنویسی می‌شود که فرم واقعاً داده‌ای فرستاده باشد
@@ -1334,6 +1337,16 @@ class SMV_Admin {
             wp_delete_post($del_id, true);
         }
 
+        // حالت تکمیلِ هر روز (برای حالت «ترکیبی»): از ردیف‌های فرم جمع می‌شود؛
+        // همهٔ سانس‌های یک روز یک حالت دارند و اولین ردیفِ هر روز ملاک است.
+        $posted_day_modes = array();
+        $collect_day_mode = function ($date, $mode) use (&$posted_day_modes) {
+            $date = (string) $date;
+            if ('' !== $date && !isset($posted_day_modes[$date])) {
+                $posted_day_modes[$date] = ('free' === $mode) ? 'free' : 'ordered';
+            }
+        };
+
         // به‌روزرسانی سانس‌های موجود (مقادیر فرم حفظ می‌شوند و ظرفیت رزرو صفر نمی‌شود)
         $existing_showtimes = isset($_POST['showtimes']) && is_array($_POST['showtimes']) ? wp_unslash($_POST['showtimes']) : array();
         foreach ($existing_showtimes as $st_id => $st_data) {
@@ -1354,6 +1367,7 @@ class SMV_Admin {
             update_post_meta($st_id, '_smv_showtime_time_end', $time_end);
             update_post_meta($st_id, '_smv_capacity', isset($st_data['capacity']) ? smv_parse_amount($st_data['capacity']) : 0);
             update_post_meta($st_id, '_smv_manual_booked', isset($st_data['manual_booked']) ? smv_parse_amount($st_data['manual_booked']) : 0);
+            $collect_day_mode($date, isset($st_data['day_mode']) ? sanitize_key($st_data['day_mode']) : 'ordered');
             update_post_meta($st_id, '_smv_priority', isset($st_data['priority']) ? absint($st_data['priority']) : 0);
             update_post_meta($st_id, '_smv_showtime_price', isset($st_data['price']) ? smv_parse_amount($st_data['price']) : 0);
             update_post_meta($st_id, '_smv_showtime_venue', isset($st_data['venue']) ? sanitize_text_field($st_data['venue']) : '');
@@ -1389,12 +1403,26 @@ class SMV_Admin {
                 update_post_meta($st_post_id, '_smv_showtime_time_end', $time_end);
                 update_post_meta($st_post_id, '_smv_capacity', isset($st_data['capacity']) ? smv_parse_amount($st_data['capacity']) : 0);
                 update_post_meta($st_post_id, '_smv_manual_booked', isset($st_data['manual_booked']) ? smv_parse_amount($st_data['manual_booked']) : 0);
+                $collect_day_mode($date, isset($st_data['day_mode']) ? sanitize_key($st_data['day_mode']) : 'ordered');
                 update_post_meta($st_post_id, '_smv_priority', isset($st_data['priority']) ? absint($st_data['priority']) : 0);
                 update_post_meta($st_post_id, '_smv_booked', 0);
                 update_post_meta($st_post_id, '_smv_showtime_price', isset($st_data['price']) ? smv_parse_amount($st_data['price']) : 0);
                 update_post_meta($st_post_id, '_smv_showtime_venue', isset($st_data['venue']) ? sanitize_text_field($st_data['venue']) : '');
                 self::force_publish($st_post_id);
             }
+        }
+
+        // ذخیرهٔ نقشهٔ حالت روزانه (ادغام با روزهای قبلی؛ روزهای حذف‌شده بی‌اثر می‌مانند)
+        if ($posted_day_modes) {
+            $day_modes_map = get_post_meta($post_id, '_smv_day_fill_modes', true);
+            $day_modes_map = maybe_unserialize($day_modes_map);
+            if (!is_array($day_modes_map)) {
+                $day_modes_map = array();
+            }
+            foreach ($posted_day_modes as $day_date_key => $day_mode_value) {
+                $day_modes_map[$day_date_key] = $day_mode_value;
+            }
+            update_post_meta($post_id, '_smv_day_fill_modes', $day_modes_map);
         }
 
         $saved_url = $post_id
