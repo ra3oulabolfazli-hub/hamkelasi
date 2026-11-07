@@ -1,3 +1,8 @@
+/* ===== فونت وزیرمتن — همراه افزونه (بدون نیاز به اینترنت) ===== */
+@font-face { font-family:'Vazirmatn'; src:url('../fonts/Vazirmatn-Variable.woff2') format('woff2'); font-weight:100 900; font-style:normal; font-display:swap; }
+@font-face { font-family:'Vazirmatn'; src:url('../fonts/Vazirmatn-Regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family:'Vazirmatn'; src:url('../fonts/Vazirmatn-Bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+
 /* Samavieh Admin — مطابق طراحی frontend سایت (سبز تاریک، לק طلایی، کرم، Vazirmatn) */
 .smv-admin-wrap, .smv-admin-wrap * { box-sizing: border-box; }
 .smv-admin-wrap { direction:rtl; font-family:'Vazirmatn',Tahoma,Arial,sans-serif; color:#263934; max-width:1440px; margin:0 auto 40px auto; line-height:1.8; padding:0 20px; }
@@ -237,3 +242,137 @@
 .smv-gallery-item { position:relative; }
 .smv-gallery-remove { position:absolute; top:-6px; left:-6px; width:20px; height:20px; border-radius:50%; border:none; background:#a04444; color:#fff; cursor:pointer; line-height:1; font-size:12px; }
 .smv-admin-field-full { grid-column:1 / -1; }
+
+/* =====================================================================
+   نسخهٔ ۱.۴.۱ — ارتقای گرافیکی پنل + سانس‌های قابل‌ویرایش
+   ===================================================================== */
+
+/* ---------- فونت و تایپوگرافی ---------- */
+body.toplevel_page_smv-dashboard #adminmenu li.toplevel_page_smv-dashboard > a,
+#adminmenu li.toplevel_page_smv-dashboard > a.menu-top,
+#adminmenu li.toplevel_page_smv-dashboard .wp-submenu a { font-family:'Vazirmatn',Tahoma,Arial,sans-serif; }
+#adminmenu li.toplevel_page_smv-dashboard > a.menu-top { font-weight:700; letter-spacing:0; }
+#adminmenu li.toplevel_page_smv-dashboard div.wp-menu-image.svg { background-size:19px auto !important; }
+
+.smv-admin-wrap,
+.smv-admin-wrap input,
+.smv-admin-wrap select,
+.smv-admin-wrap textarea,
+.smv-admin-wrap button,
+.smv-admin-wrap .button,
+.smv-admin-wrap th,
+.smv-admin-wrap td,
+.smv-admin-wrap h1,
+.smv-admin-wrap h2,
+.smv-admin-wrap h3,
+.smv-admin-wrap h4 { font-family:'Vazirmatn',Tahoma,Arial,sans-serif; }
+.smv-admin-wrap .dashicons,
+.smv-admin-wrap .dashicons-before:before { font-family:dashicons !important; }
+.smv-admin-wrap { -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; font-feature-settings:"ss01"; }
+
+/* ---------- سربرگ و کارت‌ها ---------- */
+.smv-site-header { box-shadow:0 18px 44px rgba(9,46,43,.18); }
+.smv-site-header:before { content:""; position:absolute; inset:0; background:linear-gradient(115deg,rgba(201,162,39,.16),transparent 45%); pointer-events:none; }
+.smv-site-brand img { filter:drop-shadow(0 6px 16px rgba(0,0,0,.35)); }
+
+.smv-stat-card { border-radius:20px; padding:22px 24px; border-color:#e9e5d9; }
+.smv-stat-card:before { content:""; position:absolute; left:-30px; bottom:-46px; width:130px; height:130px; border-radius:50%; background:radial-gradient(circle,rgba(18,63,58,.07),transparent 70%); }
+.smv-stat-card strong { font-weight:800; letter-spacing:-.5px; }
+.smv-stat-card:hover { transform:translateY(-3px); box-shadow:0 18px 40px rgba(15,55,49,.12); }
+
+.smv-admin-card { border-radius:20px; border-color:#e9e5d9; box-shadow:0 6px 26px rgba(20,45,40,.045); }
+.smv-admin-card > h2, .smv-card-title-row h2 { display:flex; align-items:center; gap:8px; }
+.smv-admin-card h2 .dashicons, .smv-admin-card h3 .dashicons { color:#b48a3c; font-size:19px; width:19px; height:19px; }
+.smv-admin-heading h1 { font-weight:800; letter-spacing:-.4px; }
+.smv-admin-kicker { color:#a3813f; letter-spacing:.4px; }
+
+/* ---------- تب‌های ویرایشگر ---------- */
+.smv-editor-tabs { gap:6px; background:#f7f4ec; border:1px solid #ece6d8; border-radius:14px; padding:6px; display:flex; flex-wrap:wrap; }
+.smv-editor-tabs .tab-btn { border:1px solid transparent !important; border-radius:10px; padding:9px 16px; font-size:12px; font-weight:700; color:#6b7873; background:transparent; transition:background .2s,color .2s,box-shadow .2s; }
+.smv-editor-tabs .tab-btn:hover { color:#123f3a; background:#fffdf7; }
+.smv-editor-tabs .tab-btn.active { background:linear-gradient(135deg,#123f3a,#1d5b51); color:#f4e5c2 !important; border-color:#123f3a !important; box-shadow:0 6px 16px rgba(18,63,58,.22); }
+.tab-panel { padding-top:18px; }
+
+/* ---------- سانس‌ها ---------- */
+.smv-showtime-toolbar { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; background:linear-gradient(135deg,#fbf7ec,#fffdf9); border:1px solid #ece3cf; border-radius:16px; padding:16px 18px; margin-bottom:16px; }
+.smv-showtime-toolbar h3 { display:flex; align-items:center; gap:8px; margin:0 0 4px; font-size:14px; color:#123f3a; font-weight:800; }
+.smv-showtime-toolbar h3 .dashicons { color:#b48a3c; font-size:18px; width:18px; height:18px; }
+.smv-showtime-toolbar p { margin:0; font-size:11px; color:#7d8783; max-width:640px; line-height:1.9; }
+.smv-showtime-counter { display:inline-grid; place-items:center; min-width:24px; height:24px; padding:0 7px; border-radius:999px; background:#123f3a; color:#f3e3bb; font-size:11px; font-weight:700; }
+.smv-add-showtime { display:inline-flex !important; align-items:center; gap:6px; }
+.smv-add-showtime .dashicons { font-size:17px; width:17px; height:17px; }
+
+#smv-showtimes-list { display:flex; flex-direction:column; gap:12px; margin:0 0 12px; }
+.smv-showtime-item { background:#fff; border:1px solid #e7e3d8; border-radius:16px; padding:14px 16px; box-shadow:0 3px 14px rgba(20,45,40,.04); transition:border-color .2s,box-shadow .2s,transform .2s; }
+.smv-showtime-item:hover { border-color:#d9c79c; box-shadow:0 12px 28px rgba(20,45,40,.09); transform:translateY(-1px); }
+.smv-showtime-item.is-new { border-color:#9cc3b1; background:linear-gradient(180deg,#f5fbf8,#fff); }
+.smv-showtime-item-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+.smv-showtime-num { width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:#123f3a; color:#f0dcae; font-size:11px; font-weight:700; flex:0 0 auto; }
+.smv-showtime-title { font-size:12px; font-weight:700; color:#1f3a34; }
+.smv-showtime-capacity { font-size:10px; color:#5f6f69; background:#f3f6f4; border:1px solid #e3e9e4; border-radius:999px; padding:3px 10px; }
+.smv-showtime-badge-new { font-size:10px; color:#8d6118; background:#fff4dd; border:1px solid #f0dfb8; border-radius:999px; padding:3px 10px; }
+.smv-showtime-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+.smv-showtime-grid label { display:flex; flex-direction:column; gap:5px; font-size:10px; font-weight:700; color:#5a6963; }
+.smv-showtime-grid input { width:100%; min-height:36px; border:1px solid #d9dfda; border-radius:9px; padding:6px 9px; font-size:11px; background:#fdfdfc; color:#263934; font-family:inherit; transition:border-color .2s,box-shadow .2s; }
+.smv-showtime-grid input:focus { border-color:#c9a45f; box-shadow:0 0 0 2px rgba(201,164,95,.2); outline:none; background:#fff; }
+.smv-remove-showtime { margin-right:auto; display:inline-flex; align-items:center; gap:5px; background:#fff2f0; color:#a33f33; border:1px solid #f2cfc9; border-radius:9px; padding:5px 11px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .2s,border-color .2s,color .2s; }
+.smv-remove-showtime .dashicons { font-size:15px; width:15px; height:15px; }
+.smv-remove-showtime:hover { background:#f9ded9; border-color:#e0aaa1; color:#8c2f24; }
+.smv-showtime-empty { border:2px dashed #e4ddcc; border-radius:16px; background:#fdfbf5; padding:26px 18px; text-align:center; color:#7f8a85; }
+.smv-showtime-empty[hidden] { display:none; }
+.smv-showtime-empty .dashicons { font-size:30px; width:30px; height:30px; color:#c9b98d; display:block; margin:0 auto 8px; }
+.smv-showtime-empty p { margin:0; font-size:12px; line-height:2; }
+.smv-showtime-empty small { color:#98a19d; font-size:10px; }
+.smv-showtime-hint { display:flex; align-items:flex-start; gap:7px; font-size:10px; color:#8a948f; line-height:1.9; margin:6px 0 0; }
+.smv-showtime-hint .dashicons { font-size:15px; width:15px; height:15px; color:#b0a88f; flex:0 0 auto; }
+
+.smv-inline-alert { border-radius:12px; padding:11px 14px; font-size:11px; font-weight:700; margin:0 0 14px; border:1px solid #f0cfc9; background:#fff4f2; color:#8c2f24; }
+.smv-inline-alert[hidden] { display:none; }
+.smv-inline-alert.is-success { background:#eefaf3; border-color:#bfe4d1; color:#1f6b4f; }
+
+/* ---------- نوار ذخیرهٔ چسبان ---------- */
+.smv-submit-bar { position:sticky; bottom:10px; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin:22px 0 6px; padding:12px 18px; border-radius:16px; background:linear-gradient(120deg,rgba(18,63,58,.97),rgba(9,46,43,.97)); box-shadow:0 10px 34px rgba(9,46,43,.28); color:#dfeae7; }
+.smv-submit-bar-info { display:flex; align-items:center; gap:8px; font-size:11px; color:#c9dcd6; }
+.smv-submit-bar-info .dashicons { color:#e4c88f; font-size:17px; width:17px; height:17px; }
+.smv-submit-bar-actions { display:flex; align-items:center; gap:10px; }
+.smv-submit-bar .button { border-radius:10px; }
+.smv-submit-bar .button:not(.button-primary) { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.22); color:#eef5f2; }
+.smv-submit-bar .button:not(.button-primary):hover { background:rgba(255,255,255,.16); color:#fff; }
+.smv-submit-bar .button-primary { background:linear-gradient(135deg,#c9a227,#e0bd55) !important; border-color:#b08c1f !important; color:#20180a !important; font-weight:800; box-shadow:0 6px 18px rgba(201,162,39,.35); }
+.smv-submit-bar .button-primary:hover { filter:brightness(1.06); }
+.smv-button-primary.is-busy { opacity:.75; cursor:progress; }
+
+/* ---------- جدول‌ها و فرم‌ها ---------- */
+.smv-table-wrap { border:1px solid #e9e5d9; border-radius:16px; background:#fff; }
+.smv-table-wrap table { margin:0; border:0; }
+.smv-table-wrap thead th { background:linear-gradient(180deg,#f7f4ec,#fdfbf6); color:#41524c; font-size:10px; font-weight:800; letter-spacing:.2px; border-bottom:1px solid #ece6d8; }
+.smv-table-wrap tbody tr:nth-child(even) { background:#fcfbf7; }
+.smv-table-wrap tbody tr:hover { background:#fffaf0; }
+.smv-table-wrap td { font-size:11px; color:#3c4d47; }
+.smv-filter-bar { background:#fbf9f3; border:1px solid #eee8da; border-radius:14px; padding:12px 14px; }
+
+/* ---------- دکمه‌های اصلی ---------- */
+.button.smv-primary-button, .smv-primary-button.button { background:linear-gradient(135deg,#123f3a,#1d5b51) !important; border-color:#123f3a !important; box-shadow:0 6px 18px rgba(18,63,58,.18); }
+.button.smv-primary-button:hover, .smv-primary-button.button:hover { background:linear-gradient(135deg,#1a524a,#2a6f62) !important; }
+
+/* ---------- ریسپانسیو ---------- */
+@media (max-width:1200px) {
+  .smv-showtime-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media (max-width:782px) {
+  .smv-stat-grid, .smv-quick-grid, .smv-settings-grid, .smv-admin-two-col { grid-template-columns:1fr 1fr; }
+  .smv-showtime-grid { grid-template-columns:1fr 1fr; }
+  .smv-showtime-venue { grid-column:1 / -1; }
+  .smv-remove-showtime { margin-right:0; }
+  .smv-submit-bar { position:static; }
+  .smv-editor-tabs { overflow-x:auto; flex-wrap:nowrap; }
+}
+@media (max-width:560px) {
+  .smv-stat-grid, .smv-quick-grid, .smv-settings-grid, .smv-admin-two-col { grid-template-columns:1fr; }
+  .smv-showtime-grid { grid-template-columns:1fr; }
+}
+
+/* ---------- آیکن‌های منوی افزونه ---------- */
+#adminmenu .toplevel_page_smv-dashboard .wp-submenu a .dashicons { font-size:15px !important; width:15px; height:15px; margin-left:3px; vertical-align:-3px; color:#c9a227; opacity:.95; }
+#adminmenu .toplevel_page_smv-dashboard .wp-submenu a:hover .dashicons,
+#adminmenu .toplevel_page_smv-dashboard .wp-submenu li.current a .dashicons { color:#fff; opacity:1; }

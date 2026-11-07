@@ -136,7 +136,7 @@ class SMV_Meta {
             update_post_meta($post_id, '_smv_' . $key, $value);
         }
         foreach ($number_fields as $key) {
-            $value = isset($_POST['_smv_' . $key]) ? absint(SMV_Persian::english_digits(wp_unslash($_POST['_smv_' . $key]))) : 0;
+            $value = isset($_POST['_smv_' . $key]) ? smv_parse_amount(wp_unslash($_POST['_smv_' . $key])) : 0;
             update_post_meta($post_id, '_smv_' . $key, $value);
         }
         $status = isset($_POST['_smv_registration_status']) && 'open' === $_POST['_smv_registration_status'] ? 'open' : 'closed';

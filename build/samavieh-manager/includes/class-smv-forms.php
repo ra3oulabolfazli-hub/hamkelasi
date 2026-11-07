@@ -111,7 +111,7 @@ class SMV_Forms {
         $theatre_id = isset($_POST['theatre_id']) ? absint($_POST['theatre_id']) : 0;
         $showtime_id = isset($_POST['showtime_id']) ? absint($_POST['showtime_id']) : 0;
         $payment_type = isset($_POST['payment_type']) ? sanitize_text_field(wp_unslash($_POST['payment_type'])) : '';
-        $financial_aid_amount = isset($_POST['financial_aid_amount']) ? absint(SMV_Persian::english_digits(wp_unslash($_POST['financial_aid_amount']))) : 0;
+        $financial_aid_amount = isset($_POST['financial_aid_amount']) ? smv_parse_amount(wp_unslash($_POST['financial_aid_amount'])) : 0;
         $financial_aid_reason = isset($_POST['financial_aid_reason']) ? sanitize_textarea_field(wp_unslash($_POST['financial_aid_reason'])) : '';
 
         $old = array(

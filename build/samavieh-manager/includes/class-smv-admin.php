@@ -58,14 +58,40 @@ class SMV_Admin {
     }
 
     public static function menus() {
-        add_menu_page('سماویه', 'سماویه', 'manage_smv_registrations', 'smv-dashboard', array(__CLASS__, 'dashboard'), 'dashicons-star-filled', 26);
-        add_submenu_page('smv-dashboard', 'پیشخوان سماویه', 'پیشخوان', 'manage_smv_registrations', 'smv-dashboard', array(__CLASS__, 'dashboard'), 'dashicons-dashboard', 1);
-        add_submenu_page('smv-dashboard', 'ثبت‌نام‌ها و فیش‌ها', 'ثبت‌نام‌ها', 'manage_smv_registrations', 'smv-registrations', array(__CLASS__, 'registrations'), 'dashicons-format-clipboard', 2);
-        add_submenu_page('smv-dashboard', 'مدیریت تئاترها', 'تئاترها', 'manage_smv_registrations', 'smv-theatres', array(__CLASS__, 'theatres'), 'dashicons-tickets-alt', 2);
-        add_submenu_page('smv-dashboard', 'نظرات تاییدشده', 'نظرات', 'manage_smv_registrations', 'smv-reviews', array(__CLASS__, 'reviews'), 'dashicons-format-status', 3);
-        add_submenu_page('smv-dashboard', 'تنظیمات سماویه', 'تنظیمات و اطلاعات تماس', 'manage_smv_registrations', 'smv-settings', array('SMV_Settings', 'render_page'), 'dashicons-admin-generic', 4);
-        add_submenu_page('smv-dashboard', 'تنظیمات اینماد', 'تنظیمات اینماد', 'manage_smv_registrations', 'smv-enamad', array('SMV_Enamad', 'render_page'), 'dashicons-shield', 5);
-        add_submenu_page('smv-dashboard', 'پشتیبان‌گیری و بروزرسانی', 'پشتیبان‌گیری و بروزرسانی', 'manage_smv_registrations', 'smv-backup', array('SMV_Backup', 'render_page'), 'dashicons-backup', 6);
+        add_menu_page(
+            'سماویه',
+            'سماویه',
+            'manage_smv_registrations',
+            'smv-dashboard',
+            array(__CLASS__, 'dashboard'),
+            self::menu_icon(),
+            26
+        );
+
+        // آیکن هر آیتم منو با Dashicons داخل عنوان منو قرار می‌گیرد (وردپرس آیکن جدا برای زیرمنو ندارد).
+        $icon = function ($name) {
+            return "<span class='dashicons dashicons-" . esc_attr($name) . "' aria-hidden='true'></span> ";
+        };
+
+        add_submenu_page('smv-dashboard', 'پیشخوان سماویه', $icon('dashboard') . 'پیشخوان', 'manage_smv_registrations', 'smv-dashboard', array(__CLASS__, 'dashboard'));
+        add_submenu_page('smv-dashboard', 'ثبت‌نام‌ها و فیش‌ها', $icon('clipboard') . 'ثبت‌نام‌ها', 'manage_smv_registrations', 'smv-registrations', array(__CLASS__, 'registrations'));
+        add_submenu_page('smv-dashboard', 'مدیریت تئاترها', $icon('tickets-alt') . 'تئاترها', 'manage_smv_registrations', 'smv-theatres', array(__CLASS__, 'theatres'));
+        add_submenu_page('smv-dashboard', 'نظرات تأییدشده', $icon('format-status') . 'نظرات', 'manage_smv_registrations', 'smv-reviews', array(__CLASS__, 'reviews'));
+        add_submenu_page('smv-dashboard', 'تنظیمات سماویه', $icon('admin-generic') . 'تنظیمات و اطلاعات تماس', 'manage_smv_registrations', 'smv-settings', array('SMV_Settings', 'render_page'));
+        add_submenu_page('smv-dashboard', 'تنظیمات اینماد', $icon('shield') . 'تنظیمات اینماد', 'manage_smv_registrations', 'smv-enamad', array('SMV_Enamad', 'render_page'));
+        add_submenu_page('smv-dashboard', 'پشتیبان‌گیری و بروزرسانی', $icon('backup') . 'پشتیبان‌گیری و بروزرسانی', 'manage_smv_registrations', 'smv-backup', array('SMV_Backup', 'render_page'));
+    }
+
+    /**
+     * آیکن اختصاصی منوی «سماویه» در پیشخوان (بلیت طلایی با ستاره).
+     * SVG درون‌خطی به‌صورت data URI تا نیازی به فایل/فونت آیکن نباشد.
+     */
+    public static function menu_icon() {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">'
+            . '<path fill="#c9a227" d="M3 6.5A2.5 2.5 0 0 1 5.5 4h13A2.5 2.5 0 0 1 21 6.5v3a2.5 2.5 0 0 0 0 5v3A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5v-3a2.5 2.5 0 0 0 0-5v-3Z"/>'
+            . '<path fill="#123f3a" d="M12 8.2l1.1 2.3 2.5.4-1.8 1.8.4 2.5L12 14.1l-2.2 1.1.4-2.5-1.8-1.8 2.5-.4z"/>'
+            . '</svg>';
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 
     public static function assets($hook) {
@@ -204,7 +230,7 @@ class SMV_Admin {
             </div>
 
             <section class="smv-admin-card">
-                <div class="smv-card-title-row"><div><h2>کارهای اصلی</h2><p>چهار میان‌بر برای مدیریت روزانه سایت</p></div></div>
+                <div class="smv-card-title-row"><div><h2><span class="dashicons dashicons-screenoptions"></span>کارهای اصلی</h2><p>چهار میان‌بر برای مدیریت روزانه سایت</p></div></div>
                 <div class="smv-quick-grid">
                     <a href="<?php echo esc_url(admin_url('admin.php?page=smv-theatres&action=add')); ?>"><span class="smv-quick-icon">＋</span><strong>افزودن تئاتر جدید</strong><small>جزئیات، سانس‌ها، بازیگران، پوستر و...</small></a>
                     <a href="<?php echo esc_url(admin_url('admin.php?page=smv-registrations&status=pending')); ?>"><span class="smv-quick-icon">✓</span><strong>بررسی فیش‌ها</strong><small>تأیید یا رد درخواست‌های در انتظار</small></a>
@@ -215,7 +241,7 @@ class SMV_Admin {
 
             <div class="smv-admin-two-col">
                 <section class="smv-admin-card">
-                    <div class="smv-card-title-row"><div><h2>آخرین درخواست‌ها</h2><p>برای بررسی کامل، روی «مشاهده» بزنید.</p></div><a href="<?php echo esc_url(admin_url('admin.php?page=smv-registrations')); ?>">مشاهده همه</a></div>
+                    <div class="smv-card-title-row"><div><h2><span class="dashicons dashicons-list-view"></span>آخرین درخواست‌ها</h2><p>برای بررسی کامل، روی «مشاهده» بزنید.</p></div><a href="<?php echo esc_url(admin_url('admin.php?page=smv-registrations')); ?>">مشاهده همه</a></div>
                     <?php if ($latest) : ?>
                         <div class="smv-latest-list">
                             <?php foreach ($latest as $row) : ?>
@@ -226,7 +252,7 @@ class SMV_Admin {
                 </section>
 
                 <section class="smv-admin-card smv-start-card">
-                    <span class="smv-admin-kicker">راه‌اندازی اولیه</span><h2>ساخت خودکار صفحات سایت</h2><p>خانه، تئاترها، پروژه‌ها، درباره ما، تماس و پیگیری ثبت‌نام را با یک کلیک بسازید. صفحات موجود حذف یا تکرار نمی‌شوند.</p>
+                    <span class="smv-admin-kicker">راه‌اندازی اولیه</span><h2><span class="dashicons dashicons-admin-site-alt3"></span>ساخت خودکار صفحات سایت</h2><p>خانه، تئاترها، پروژه‌ها، درباره ما، تماس و پیگیری ثبت‌نام را با یک کلیک بسازید. صفحات موجود حذف یا تکرار نمی‌شوند.</p>
                     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"><?php wp_nonce_field('smv_create_pages'); ?><input type="hidden" name="action" value="smv_create_pages" /><button type="submit" class="button smv-primary-button">ساخت / تکمیل صفحات پایه</button></form>
                     <hr />
                     <h3>وضعیت ابزارها</h3>
@@ -455,6 +481,9 @@ class SMV_Admin {
             <?php if (isset($_GET['smv_error'])) : ?>
                 <div class="notice notice-error is-dismissible"><p><?php echo esc_html(sanitize_text_field(wp_unslash($_GET['smv_error']))); ?></p></div>
             <?php endif; ?>
+            <?php if (isset($_GET['smv_saved'])) : ?>
+                <div class="notice notice-success is-dismissible"><p><strong>ذخیره شد.</strong> اطلاعات تئاتر و سانس‌ها با موفقیت به‌روزرسانی شد.</p></div>
+            <?php endif; ?>
             <div class="smv-admin-heading">
                 <div>
                     <span class="smv-admin-kicker"><?php echo esc_html($page_title); ?></span>
@@ -464,7 +493,7 @@ class SMV_Admin {
                 <a href="<?php echo esc_url(admin_url('admin.php?page=smv-theatres')); ?>" class="button button-link">بازگشت به لیست</a>
             </div>
 
-            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data" id="smv-theatre-form">
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data" id="smv-theatre-form" novalidate>
                 <?php wp_nonce_field('smv_save_theatre'); ?>
                 <?php wp_nonce_field('smv_delete_showtime', 'smv_delete_showtime_nonce'); ?>
                 <input type="hidden" name="action" value="smv_save_theatre" />
@@ -472,11 +501,11 @@ class SMV_Admin {
 
                 <section class="smv-admin-card smv-theatre-editor">
                     <div class="smv-editor-tabs">
-                        <button class="tab-btn active" data-tab="basic">اطلاعات پایه</button>
-                        <button class="tab-btn" data-tab="cast">بازیگران و عوامل</button>
-                        <button class="tab-btn" data-tab="media">مدیا و پوستر</button>
-                        <button class="tab-btn" data-tab="showtimes">سانس‌ها و ظرفیت</button>
-                        <button class="tab-btn" data-tab="payment">روش پرداخت</button>
+                        <button type="button" class="tab-btn active" data-tab="basic">اطلاعات پایه</button>
+                        <button type="button" class="tab-btn" data-tab="cast">بازیگران و عوامل</button>
+                        <button type="button" class="tab-btn" data-tab="media">مدیا و پوستر</button>
+                        <button type="button" class="tab-btn" data-tab="showtimes">سانس‌ها و ظرفیت</button>
+                        <button type="button" class="tab-btn" data-tab="payment">روش پرداخت</button>
                     </div>
 
                     <!-- Tab: Basic -->
@@ -601,7 +630,7 @@ class SMV_Admin {
                                 <label><strong>موشن گرافیک / ویدیو تریلر</strong></label>
                                 <div class="smv-video-upload" id="smv-video-upload">
                                     <?php if (isset($meta['_smv_video_id'][0]) && $meta['_smv_video_id'][0]) : ?>
-                                        <?php $video_meta = wp_get_attachment_metadata($meta['_smv_video_url'][0]); $video_url = wp_get_attachment_url($meta['_smv_video_id'][0]); ?>
+                                        <?php $video_url = wp_get_attachment_url($meta['_smv_video_id'][0]); ?>
                                         <div class="smv-video-preview">
                                             <a href="<?php echo esc_url($video_url); ?>" target="_blank">مشاهده ویدیو فعلی</a>
                                             <button type="button" class="smv-remove-image" id="smv-remove-video">حذف ویدیو</button>
@@ -620,54 +649,63 @@ class SMV_Admin {
 
                     <!-- Tab: Showtimes -->
                     <div class="tab-panel" id="tab-showtimes">
-                        <div class="smv-admin-field full">
-                            <label><strong>لیست سانس‌ها</strong></label>
-                            <div id="smv-showtimes-list">
-                                <?php if (!empty($showtimes)) : ?>
-                                    <?php
-                                    foreach ($showtimes as $st) :
-                                        $st_id = $st->ID;
-                                        $st_date = get_post_meta($st_id, '_smv_showtime_date', true);
-                                        $st_time = get_post_meta($st_id, '_smv_showtime_time', true);
-                                        $st_capacity = absint(get_post_meta($st_id, '_smv_capacity', true));
-                                        $st_price = absint(get_post_meta($st_id, '_smv_showtime_price', true));
-                                        $st_venue = get_post_meta($st_id, '_smv_showtime_venue', true);
-                                        $st_booked = smv_showtime_booked_count($st_id);
-                                        $st_status = get_post_status($st_id);
-                                        ?>
-                                        <div class="smv-showtime-item" data-id="<?php echo esc_attr($st_id); ?>">
-                                            <div class="smv-showtime-header">
-                                                <label>تاریخ <input type="date" name="showtimes[<?php echo esc_attr($st_id); ?>][date]" value="<?php echo esc_attr($st_date); ?>" required /></label>
-                                                <label>ساعت <input type="time" name="showtimes[<?php echo esc_attr($st_id); ?>][time]" value="<?php echo esc_attr($st_time); ?>" /></label>
-                                                <label>ظرفیت <input type="number" min="0" name="showtimes[<?php echo esc_attr($st_id); ?>][capacity]" value="<?php echo esc_attr($st_capacity); ?>" /></label>
-                                                <label>قیمت (تومان) <input type="number" min="0" name="showtimes[<?php echo esc_attr($st_id); ?>][price]" value="<?php echo esc_attr($st_price); ?>" /></label>
-                                                <label>محل اجرا <input type="text" name="showtimes[<?php echo esc_attr($st_id); ?>][venue]" value="<?php echo esc_attr($st_venue); ?>" /></label>
-                                                <span class="smv-showtime-capacity">رزرو‌شده: <?php echo esc_html(SMV_Persian::digits($st_booked)); ?></span>
-                                                <?php if ('publish' !== $st_status) : ?><span class="smv-showtime-status"><?php echo esc_html(smv_post_status_label($st_status)); ?></span><?php endif; ?>
-                                                <button type="button" class="smv-remove-showtime" onclick="removeShowtime(<?php echo esc_attr($st_id); ?>)">حذف</button>
-                                            </div>
-                                            <input type="hidden" name="showtimes[<?php echo esc_attr($st_id); ?>][id]" value="<?php echo esc_attr($st_id); ?>" />
-                                            <input type="hidden" name="showtimes[<?php echo esc_attr($st_id); ?>][theatre_id]" value="<?php echo esc_attr($theatre_id); ?>" />
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php else : ?>
-                                    <p class="smv-settings-help">هنوز سانسی برای این اجرا ثبت نشده است. با دکمهٔ زیر سانس اضافه کنید.</p>
-                                <?php endif; ?>
+                        <div class="smv-showtime-toolbar">
+                            <div class="smv-showtime-toolbar-text">
+                                <h3><span class="dashicons dashicons-calendar-alt"></span> سانس‌ها و ظرفیت</h3>
+                                <p>برای هر اجرا می‌توانید چند سانس با تاریخ، ساعت، ظرفیت و قیمت جداگانه تعریف کنید. تغییرات با دکمهٔ «<?php echo esc_html($button_text); ?>» ذخیره می‌شود.</p>
                             </div>
-                            <button type="button" class="button smv-primary-button" id="smv-add-showtime">افزودن سانس جدید</button>
-                            <div id="smv-showtime-template" style="display:none;">
-                                <div class="smv-showtime-item">
-                                    <div class="smv-showtime-header">
-                                        <input type="date" name="new_showtime[__ID__][date]" placeholder="تاریخ" required />
-                                        <input type="time" name="new_showtime[__ID__][time]" placeholder="ساعت" required />
-                                        <input type="number" name="new_showtime[__ID__][capacity]" placeholder="ظرفیت" min="1" required />
-                                        <input type="number" name="new_showtime[__ID__][price]" placeholder="قیمت (تومان)" min="0" required />
-                                        <input type="text" name="new_showtime[__ID__][venue]" placeholder="محل اجرا" />
-                                        <button type="button" class="smv-remove-showtime">حذف</button>
-                                    </div>
-                                </div>
-                            </div>
+                            <button type="button" class="button smv-primary-button smv-add-showtime" id="smv-add-showtime">
+                                <span class="dashicons dashicons-plus-alt2"></span> افزودن سانس جدید
+                            </button>
                         </div>
+
+                        <div class="smv-inline-alert" id="smv-showtime-alert" role="alert" hidden></div>
+
+                        <div id="smv-showtimes-list" class="smv-showtime-list">
+                            <?php $st_index = 0; ?>
+                            <?php foreach ($showtimes as $st) : ?>
+                                <?php
+                                $st_index++;
+                                $st_id = (int) $st->ID;
+                                $st_date = get_post_meta($st_id, '_smv_showtime_date', true);
+                                $st_time = get_post_meta($st_id, '_smv_showtime_time', true);
+                                $st_capacity = absint(get_post_meta($st_id, '_smv_capacity', true));
+                                $st_price = absint(get_post_meta($st_id, '_smv_showtime_price', true));
+                                $st_venue = get_post_meta($st_id, '_smv_showtime_venue', true);
+                                $st_booked = smv_showtime_booked_count($st_id);
+                                $st_status = get_post_status($st_id);
+                                ?>
+                                <div class="smv-showtime-item" data-id="<?php echo esc_attr($st_id); ?>" data-mode="existing">
+                                    <div class="smv-showtime-item-head">
+                                        <span class="smv-showtime-num"><?php echo esc_html(SMV_Persian::digits($st_index)); ?></span>
+                                        <span class="smv-showtime-title">سانس <?php echo esc_html(SMV_Persian::date($st_date)); ?><?php echo $st_time ? ' - ساعت ' . esc_html($st_time) : ''; ?></span>
+                                        <span class="smv-showtime-capacity">رزرو‌شده: <?php echo esc_html(SMV_Persian::digits($st_booked)); ?><?php echo $st_capacity ? ' از ' . esc_html(SMV_Persian::digits($st_capacity)) : ''; ?></span>
+                                        <?php if ('publish' !== $st_status) : ?><span class="smv-showtime-status"><?php echo esc_html(smv_post_status_label($st_status)); ?></span><?php endif; ?>
+                                        <button type="button" class="smv-remove-showtime" data-id="<?php echo esc_attr($st_id); ?>" data-mode="existing" title="حذف این سانس">
+                                            <span class="dashicons dashicons-trash"></span> حذف
+                                        </button>
+                                    </div>
+                                    <div class="smv-showtime-grid">
+                                        <label>تاریخ اجرا <input type="date" name="showtimes[<?php echo esc_attr($st_id); ?>][date]" value="<?php echo esc_attr($st_date); ?>" /></label>
+                                        <label>ساعت <input type="time" name="showtimes[<?php echo esc_attr($st_id); ?>][time]" value="<?php echo esc_attr($st_time); ?>" /></label>
+                                        <label>ظرفیت <input type="number" min="0" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][capacity]" value="<?php echo $st_capacity ? esc_attr($st_capacity) : ''; ?>" placeholder="نامحدود" /></label>
+                                        <label>قیمت (تومان) <input type="number" min="0" step="1000" name="showtimes[<?php echo esc_attr($st_id); ?>][price]" value="<?php echo $st_price ? esc_attr($st_price) : ''; ?>" placeholder="رایگان" /></label>
+                                        <label class="smv-showtime-venue">محل اجرا <input type="text" name="showtimes[<?php echo esc_attr($st_id); ?>][venue]" value="<?php echo esc_attr($st_venue); ?>" placeholder="مثلاً سالن اصلی" /></label>
+                                    </div>
+                                    <input type="hidden" name="showtimes[<?php echo esc_attr($st_id); ?>][id]" value="<?php echo esc_attr($st_id); ?>" />
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <div class="smv-showtime-empty" id="smv-showtimes-empty" <?php echo $showtimes ? 'hidden' : ''; ?>>
+                            <span class="dashicons dashicons-calendar"></span>
+                            <p>هنوز سانسی برای این اجرا ثبت نشده است.<br><small>با دکمهٔ «افزودن سانس جدید» اولین سانس را اضافه کنید. اگر سانسی تعریف نشود، ثبت‌نام در سطح کل اجرا انجام می‌شود.</small></p>
+                        </div>
+
+                        <p class="smv-showtime-hint">
+                            <span class="dashicons dashicons-info-outline"></span>
+                            سانس‌هایی که حذف می‌کنید پس از زدن دکمهٔ «<?php echo esc_html($button_text); ?>» برای همیشه پاک می‌شوند. سانس دارای ثبت‌نام را فقط وقتی حذف کنید که مطمئن هستید.
+                        </p>
                     </div>
 
                     <!-- Tab: Payment -->
@@ -694,136 +732,279 @@ class SMV_Admin {
                         </div>
                     </div>
 
-                    <div class="smv-submit-row" style="margin-top:30px;">
-                        <button type="submit" class="button smv-button-primary button-large"><?php echo esc_html($button_text); ?></button>
-                    </div>
                 </section>
+
+                <div class="smv-submit-bar">
+                    <div class="smv-submit-bar-info">
+                        <span class="dashicons dashicons-saved"></span>
+                        <span>پس از پایان ویرایش، تغییرات را ذخیره کنید.</span>
+                    </div>
+                    <div class="smv-submit-bar-actions">
+                        <a href="<?php echo esc_url(admin_url('admin.php?page=smv-theatres')); ?>" class="button">بازگشت به لیست</a>
+                        <button type="submit" class="button button-primary button-large smv-button-primary" id="smv-save-theatre"><?php echo esc_html($button_text); ?></button>
+                    </div>
+                </div>
             </form>
 
+            <script type="text/html" id="smv-showtime-template">
+                <div class="smv-showtime-item is-new" data-mode="new">
+                    <div class="smv-showtime-item-head">
+                        <span class="smv-showtime-num">۰</span>
+                        <span class="smv-showtime-title">سانس جدید</span>
+                        <span class="smv-showtime-badge-new">ذخیره‌نشده</span>
+                        <button type="button" class="smv-remove-showtime" data-mode="new" title="حذف این سانس">
+                            <span class="dashicons dashicons-trash"></span> حذف
+                        </button>
+                    </div>
+                    <div class="smv-showtime-grid">
+                        <label>تاریخ اجرا <input type="date" name="new_showtime[__INDEX__][date]" value="" /></label>
+                        <label>ساعت <input type="time" name="new_showtime[__INDEX__][time]" value="" /></label>
+                        <label>ظرفیت <input type="number" min="0" step="1" name="new_showtime[__INDEX__][capacity]" value="" /></label>
+                        <label>قیمت (تومان) <input type="number" min="0" step="1000" name="new_showtime[__INDEX__][price]" value="" /></label>
+                        <label class="smv-showtime-venue">محل اجرا <input type="text" name="new_showtime[__INDEX__][venue]" value="" placeholder="مثلاً سالن اصلی" /></label>
+                    </div>
+                </div>
+            </script>
+
             <script>
-            jQuery(document).ready(function($){
-                // Tab switching
-                $('.tab-btn').on('click', function(){
-                    var tab = $(this).data('tab');
-                    $('.tab-btn').removeClass('active');
-                    $(this).addClass('active');
-                    $('.tab-panel').removeClass('active');
-                    $('#tab-' + tab).addClass('active');
-                });
+            (function () {
+                if (!window.jQuery) { return; }
+                var $ = window.jQuery;
 
-                // Media upload - Poster
-                var posterFrame;
-                $('#smv-choose-poster').on('click', function(e){
-                    e.preventDefault();
-                    if (posterFrame) { posterFrame.open(); return; }
-                    posterFrame = wp.media.frames.posterFrame = wp.media({
-                        title: 'انتخاب پوستر',
-                        button: { text: 'استفاده از این تصویر' },
-                        multiple: false
-                    });
-                    posterFrame.on('select', function(){
-                        var attachment = posterFrame.state().get('selection').first().toJSON();
-                        $('#smv-poster-id').val(attachment.id);
-                        $('#smv-poster-preview').remove();
-                        $('#smv-poster-upload').prepend('<img id="smv-poster-preview" src="'+attachment.url+'" style="max-width:200px; border-radius:8px; margin-bottom:10px;" />');
-                        $('#smv-remove-poster').show();
-                    });
-                    posterFrame.open();
-                });
-                $('#smv-remove-poster').on('click', function(){
-                    $('#smv-poster-id').val('');
-                    $('#smv-poster-preview').remove();
-                    $(this).hide();
-                });
-
-                // Media upload - Gallery
-                var galleryFrame;
-                var galleryIds = <?php echo json_encode($gallery_ids ?? array()); ?>;
-                function refreshGallery(){
-                    $('#smv-gallery-upload .smv-gallery-item').remove();
-                    $.each(galleryIds, function(i, gid){
-                        $.post(ajaxurl, {action: 'smv_get_attachment_url', attachment_id: gid}, function(resp){
-                            if(resp.success){
-                                $('#smv-gallery-upload').append('<div class="smv-gallery-item"><img src="'+resp.data.url+'" width="80" height="80" style="border-radius:6px; object-fit:cover;" /><input type="hidden" name="gallery_ids[]" value="'+gid+'" /><button type="button" class="smv-gallery-remove" data-id="'+gid+'">×</button></div>');
-                            }
-                        });
-                    });
-                    $('#smv-gallery-ids-json').val(JSON.stringify(galleryIds));
+                function smvNotice($box, message, type) {
+                    if (!$box || !$box.length) { window.alert(message); return; }
+                    $box.removeAttr('hidden').removeClass('is-error is-success').addClass('is-' + (type || 'error')).text(message);
+                    if ($box[0] && $box[0].scrollIntoView) { $box[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
                 }
-                $('#smv-choose-gallery').on('click', function(e){
-                    e.preventDefault();
-                    if (galleryFrame) { galleryFrame.open(); return; }
-                    galleryFrame = wp.media.frames.galleryFrame = wp.media({
-                        title: 'انتخاب عکس‌ها',
-                        button: { text: 'افزودن به گالری' },
-                        multiple: true
-                    });
-                    galleryFrame.on('select', function(){
-                        var selections = galleryFrame.state().get('selection');
-                        selections.each(function(attachment){
-                            var id = attachment.id;
-                            if ($.inArray(id, galleryIds) === -1){
-                                galleryIds.push(id);
+
+                $(function () {
+                    /* ---------- تب‌ها ---------- */
+                    try {
+                        $(document).on('click', '.tab-btn', function (e) {
+                            e.preventDefault();
+                            var tab = $(this).data('tab');
+                            $('.tab-btn').removeClass('active');
+                            $(this).addClass('active');
+                            $('.tab-panel').removeClass('active');
+                            $('#tab-' + tab).addClass('active');
+                        });
+                    } catch (err) { if (window.console) { console.error(err); } }
+
+                    /* ---------- پوستر ---------- */
+                    try {
+                        var posterFrame;
+                        $('#smv-choose-poster').on('click', function (e) {
+                            e.preventDefault();
+                            if (!window.wp || !wp.media) { window.alert('کتابخانهٔ رسانهٔ وردپرس بارگذاری نشده است. صفحه را دوباره بارگذاری کنید.'); return; }
+                            if (posterFrame) { posterFrame.open(); return; }
+                            posterFrame = wp.media({ title: 'انتخاب پوستر', button: { text: 'استفاده از این تصویر' }, multiple: false });
+                            posterFrame.on('select', function () {
+                                var attachment = posterFrame.state().get('selection').first().toJSON();
+                                $('#smv-poster-id').val(attachment.id);
+                                $('#smv-poster-preview').remove();
+                                $('#smv-poster-upload').prepend('<img id="smv-poster-preview" src="' + attachment.url + '" alt="" />');
+                                $('#smv-remove-poster').show();
+                            });
+                            posterFrame.open();
+                        });
+                        $('#smv-remove-poster').on('click', function () {
+                            $('#smv-poster-id').val('');
+                            $('#smv-poster-preview').remove();
+                            $(this).hide();
+                        });
+                    } catch (err) { if (window.console) { console.error(err); } }
+
+                    /* ---------- گالری ---------- */
+                    try {
+                        var galleryFrame;
+                        var galleryIds = <?php echo wp_json_encode(array_values(array_map('intval', (array) (isset($gallery_ids) ? $gallery_ids : array())))); ?>;
+                        var ajaxUrl = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';
+
+                        function galleryItemHtml(id, url) {
+                            return '<div class="smv-gallery-item" data-id="' + id + '">' +
+                                '<img src="' + url + '" alt="" />' +
+                                '<input type="hidden" name="gallery_ids[]" value="' + id + '" />' +
+                                '<button type="button" class="smv-gallery-remove" data-id="' + id + '">×</button>' +
+                                '</div>';
+                        }
+                        function refreshGallery() {
+                            $('#smv-gallery-upload .smv-gallery-item').remove();
+                            $.each(galleryIds, function (i, gid) {
+                                $.post(ajaxUrl, { action: 'smv_get_attachment_url', attachment_id: gid },function (resp) {
+                                    if (resp && resp.success) {
+                                        $('#smv-gallery-upload').prepend(galleryItemHtml(gid, resp.data.url));
+                                    }
+                                });
+                            });
+                            $('#smv-gallery-ids-json').val(JSON.stringify(galleryIds));
+                        }
+                        $('#smv-choose-gallery').on('click', function (e) {
+                            e.preventDefault();
+                            if (!window.wp || !wp.media) { window.alert('کتابخانهٔ رسانهٔ وردپرس بارگذاری نشده است.'); return; }
+                            if (galleryFrame) { galleryFrame.open(); return; }
+                            galleryFrame = wp.media({ title: 'انتخاب عکس‌ها', button: { text: 'افزودن به گالری' }, multiple: 'add' });
+                            galleryFrame.on('select', function () {
+                                galleryFrame.state().get('selection').each(function (attachment) {
+                                    var id = parseInt(attachment.id, 10);
+                                    if ($.inArray(id, galleryIds) === -1) { galleryIds.push(id); }
+                                });
+                                refreshGallery();
+                            });
+                            galleryFrame.open();
+                        });
+                        $(document).on('click', '.smv-gallery-remove', function (e) {
+                            e.preventDefault();
+                            var id = parseInt($(this).data('id'), 10);
+                            galleryIds = $.grep(galleryIds, function (val) { return Number(val) !== id; });
+                            $(this).closest('.smv-gallery-item').remove();
+                            $('#smv-gallery-ids-json').val(JSON.stringify(galleryIds));
+                        });
+                    } catch (err) { if (window.console) { console.error(err); } }
+
+                    /* ---------- ویدیو ---------- */
+                    try {
+                        var videoFrame;
+                        $(document).on('click', '#smv-choose-video', function (e) {
+                            e.preventDefault();
+                            if (!window.wp || !wp.media) { window.alert('کتابخانهٔ رسانهٔ وردپرس بارگذاری نشده است.'); return; }
+                            if (videoFrame) { videoFrame.open(); return; }
+                            videoFrame = wp.media({ title: 'انتخاب ویدیو', button: { text: 'استفاده از این ویدیو' }, multiple: false, library: { type: 'video' } });
+                            videoFrame.on('select', function () {
+                                var attachment = videoFrame.state().get('selection').first().toJSON();
+                                $('#smv-video-upload').html(
+                                    '<input type="hidden" id="smv-video-id" name="video_id" value="' + attachment.id + '" />' +
+                                    '<input type="hidden" id="smv-video-url" name="video_url" value="' + attachment.url + '" />' +
+                                    '<div class="smv-video-preview"><a href="' + attachment.url + '" target="_blank" rel="noopener">مشاهده ویدیو</a> ' +
+                                    '<button type="button" class="smv-remove-image" id="smv-remove-video">حذف ویدیو</button></div>'
+                                );
+                            });
+                            videoFrame.open();
+                        });
+                        $(document).on('click', '#smv-remove-video', function (e) {
+                            e.preventDefault();
+                            $('#smv-video-upload').html(
+                                '<input type="text" id="smv-video-url" name="video_url" value="" placeholder="یا لینک آپارات/یوتیوب وارد کنید" /> ' +
+                                '<button type="button" class="button smv-choose-image" id="smv-choose-video">آپلود فایل ویدیو</button>'
+                            );
+                        });
+                    } catch (err) { if (window.console) { console.error(err); } }
+
+                    /* ---------- سانس‌ها ---------- */
+                    try {
+                        var $list = $('#smv-showtimes-list');
+                        var $template = $('#smv-showtime-template');
+                        var $alert = $('#smv-showtime-alert');
+                        var counter = 0;
+
+                        function updateEmptyState() {
+                            var count = $list.children('.smv-showtime-item').length;
+                            $('#smv-showtimes-empty').prop('hidden', count > 0);
+                            $('.smv-showtime-toolbar .smv-showtime-counter').remove();
+                            if (count > 0) {
+                                $('.smv-showtime-toolbar-text h3').append(' <span class="smv-showtime-counter">' + count + '</span>');
                             }
-                        });
-                        refreshGallery();
-                    });
-                    galleryFrame.open();
-                });
-                $(document).on('click', '.smv-gallery-remove', function(){
-                    var id = $(this).data('id');
-                    galleryIds = $.grep(galleryIds, function(val){ return val != id; });
-                    refreshGallery();
-                });
+                        }
 
-                // Video upload
-                var videoFrame;
-                $('#smv-choose-video').on('click', function(e){
-                    e.preventDefault();
-                    if (videoFrame) { videoFrame.open(); return; }
-                    videoFrame = wp.media.frames.videoFrame = wp.media({
-                        title: 'انتخاب ویدیو',
-                        button: { text: 'استفاده از این ویدیو' },
-                        multiple: false,
-                        library: { type: 'video' }
-                    });
-                    videoFrame.on('select', function(){
-                        var attachment = videoFrame.state().get('selection').first().toJSON();
-                        $('#smv-video-id').val(attachment.id);
-                        $('#smv-video-url').val(attachment.url);
-                        $('#smv-video-upload').html('<div class="smv-video-preview"><a href="'+attachment.url+'" target="_blank">مشاهده ویدیو</a> <button type="button" class="smv-remove-image" id="smv-remove-video">حذف ویدیو</button></div><input type="hidden" name="video_id" value="'+attachment.id+'"><input type="hidden" name="video_url" value="'+attachment.url+'">');
-                        $('#smv-remove-video').on('click', function(){
-                            $('#smv-video-id').val('');
-                            $('#smv-video-url').val('');
-                            $('#smv-video-upload').html('<input type="text" name="video_url" id="smv-video-url" placeholder="یا لینک آپارات/یوتیوب وارد کنید" /><button type="button" class="button smv-choose-image" id="smv-choose-video">آپلود فایل ویدیو</button>');
-                        });
-                    });
-                    videoFrame.open();
-                });
+                        function renumber() {
+                            $list.children('.smv-showtime-item').each(function (i) {
+                                $(this).find('.smv-showtime-num').first().text(Number(i + 1).toLocaleString('fa-IR'));
+                            });
+                        }
 
-                // Video remove (text mode)
-                $('#smv-remove-video').on('click', function(){
-                    $('#smv-video-url').val('');
-                    $(this).prev('a').remove();
-                    $(this).remove();
-                });
-
-                // Showtime template counter
-                var showtimeCounter = 0;
-                $('#smv-add-showtime').on('click', function(){
-                    showtimeCounter++;
-                    var tmpl = $('#smv-showtime-template').html().replace(/__ID__/g, 'new_' + showtimeCounter);
-                    $('#smv-showtimes-list').append(tmpl);
-                });
-                window.removeShowtime = function(id){
-                    if(confirm('آیا مطمئنید سانس حذف شود؟')){
-                        var nonce = $('input[name="smv_delete_showtime_nonce"]').val();
-                        $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {action: 'smv_delete_showtime', showtime_id: id, _wpnonce: nonce}, function(){
-                            location.reload();
+                        $('#smv-add-showtime').on('click', function (e) {
+                            e.preventDefault();
+                            if (!$template.length) { smvNotice($alert, 'قالب سانس پیدا نشد. صفحه را دوباره بارگذاری کنید.'); return; }
+                            counter += 1;
+                            var html = $template.html().replace(/__INDEX__/g, 'n' + counter + '_' + Date.now());
+                            var $row = $(html);
+                            $list.append($row);
+                            renumber();
+                            updateEmptyState();
+                            if ($alert.length) { $alert.attr('hidden', 'hidden'); }
+                            var $date = $row.find('input[type="date"]').first();
+                            $date.trigger('focus');
+                            if ($row[0] && $row[0].scrollIntoView) { $row[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
                         });
+
+                        $list.on('click', '.smv-remove-showtime', function (e) {
+                            e.preventDefault();
+                            var $row = $(this).closest('.smv-showtime-item');
+                            var mode = $row.data('mode');
+                            var id = parseInt($row.attr('data-id') || 0, 10);
+                            var question = (mode === 'existing')
+                                ? 'این سانس پس از ذخیره برای همیشه حذف می‌شود. مطمئن هستید؟'
+                                : 'این سانس ذخیره‌نشده حذف شود؟';
+                            if (!window.confirm(question)) { return; }
+                            if (mode === 'existing' && id) {
+                                // حذف نهایی هنگام ذخیرهٔ فرم انجام می‌شود (بدون وابستگی به آجاکس)
+                                $('<input type="hidden" name="delete_showtimes[]" />').val(id).appendTo('#smv-theatre-form');
+                            }
+                            // حذف فوری از DOM تا اگر کاربر بلافاصله ذخیره کند، دادهٔ حذف‌شده ارسال نشود.
+                            $row.find('input, select, textarea').prop('disabled', true);
+                            $row.remove();
+                            renumber();
+                            updateEmptyState();
+                        });
+
+                        updateEmptyState();
+
+                        /* ---------- اعتبارسنجی پیش از ذخیره ---------- */
+                        $('#smv-theatre-form').on('submit', function (e) {
+                            var errors = [];
+                            var $title = $('#smv-theatre-title');
+                            if ($.trim($title.val()) === '') {
+                                errors.push('عنوان تئاتر را وارد کنید.');
+                                if ($alert.length) { $alert.attr('hidden', 'hidden'); }
+                                $('.tab-btn[data-tab="basic"]').trigger('click');
+                                $title.trigger('focus');
+                                window.alert(errors[0]);
+                                e.preventDefault();
+                                return false;
+                            }
+
+                            $list.children('.smv-showtime-item').each(function (i) {
+                                var $row = $(this);
+                                var mode = $row.data('mode');
+                                var date = $row.find('input[type="date"]').val();
+                                var time = $row.find('input[type="time"]').val();
+                                var capacity = $.trim($row.find('input[name$="[capacity]"]').val() || '');
+                                var price = $.trim($row.find('input[name$="[price]"]').val() || '');
+                                var venue = $.trim($row.find('input[name$="[venue]"]').val() || '');
+                                var label = 'سانس ' + (i + 1);
+                                var filled = !!(time || venue || capacity !== '' || price !== '');
+
+                                // فقط سانس‌های تازه‌اضافه‌شده اجباری به تاریخ دارند؛ سانس‌های قبلی
+                                // نباید جلوی ذخیرهٔ کل تئاتر را بگیرند (دادهٔ قدیمی/ناقص).
+                                if (mode === 'new' && filled && !date) {
+                                    errors.push(label + ': تاریخ اجرا را وارد کنید (یا این ردیف را حذف کنید).');
+                                }
+                                if (mode === 'existing' && !date && time) {
+                                    errors.push(label + ': برای ساعتی که وارد کرده‌اید، تاریخ اجرا را هم مشخص کنید.');
+                                }
+                                if (capacity !== '' && (!/^\d+$/.test(capacity) || parseInt(capacity, 10) < 0)) {
+                                    errors.push(label + ': ظرفیت باید عدد صحیح باشد.');
+                                }
+                                if (price !== '' && !/^\d+$/.test(price)) {
+                                    errors.push(label + ': قیمت باید عدد باشد.');
+                                }
+                            });
+
+                            if (errors.length) {
+                                e.preventDefault();
+                                $('.tab-btn[data-tab="showtimes"]').trigger('click');
+                                smvNotice($alert, errors.join(' — '), 'error');
+                                return false;
+                            }
+
+                            var $button = $('#smv-save-theatre, .smv-submit-bar button[type="submit"]').first();
+                            $button.prop('disabled', true).addClass('is-busy').text('در حال ذخیره…');
+                            return true;
+                        });
+                    } catch (err) {
+                        if (window.console) { console.error(err); }
                     }
-                };
-            });
+                });
+            }());
             </script>
         </div>
         <?php
@@ -919,23 +1100,27 @@ class SMV_Admin {
 
         // اعداد
         foreach (array('price', 'capacity') as $key) {
-            $value = isset($_POST[$key]) ? absint(SMV_Persian::english_digits(wp_unslash($_POST[$key]))) : 0;
+            $value = isset($_POST[$key]) ? smv_parse_amount(wp_unslash($_POST[$key])) : 0;
             update_post_meta($post_id, '_smv_' . $key, $value);
         }
 
         update_post_meta($post_id, '_smv_registration_status', $registration_status);
 
         // گالری
-        $gallery_ids = array();
-        if (isset($_POST['gallery_ids']) && is_array($_POST['gallery_ids'])) {
-            $gallery_ids = array_values(array_filter(array_map('absint', wp_unslash($_POST['gallery_ids']))));
-        } elseif (isset($_POST['gallery_ids_json'])) {
-            $decoded = json_decode(wp_unslash($_POST['gallery_ids_json']), true);
-            if (is_array($decoded)) {
-                $gallery_ids = array_values(array_filter(array_map('absint', $decoded)));
+        // گالری: فقط وقتی بازنویسی می‌شود که فرم واقعاً داده‌ای فرستاده باشد
+        // (تا ذخیرهٔ بخش‌های دیگر، گالری موجود را پاک نکند).
+        if (isset($_POST['gallery_ids']) || isset($_POST['gallery_ids_json'])) {
+            $gallery_ids = array();
+            if (isset($_POST['gallery_ids']) && is_array($_POST['gallery_ids'])) {
+                $gallery_ids = array_values(array_filter(array_map('absint', wp_unslash($_POST['gallery_ids']))));
+            } elseif (isset($_POST['gallery_ids_json'])) {
+                $decoded = json_decode(wp_unslash($_POST['gallery_ids_json']), true);
+                if (is_array($decoded)) {
+                    $gallery_ids = array_values(array_filter(array_map('absint', $decoded)));
+                }
             }
+            update_post_meta($post_id, '_smv_gallery', maybe_serialize($gallery_ids));
         }
-        update_post_meta($post_id, '_smv_gallery', maybe_serialize($gallery_ids));
 
         // ویدیو
         $video_url = isset($_POST['video_url']) ? esc_url_raw(wp_unslash($_POST['video_url'])) : '';
@@ -962,11 +1147,24 @@ class SMV_Admin {
         }
         update_option('smv_settings', wp_parse_args($settings, SMV_Settings::defaults()));
 
+        // حذف سانس‌هایی که در فرم علامت «حذف» خورده‌اند
+        $delete_showtimes = isset($_POST['delete_showtimes']) && is_array($_POST['delete_showtimes']) ? array_map('absint', wp_unslash($_POST['delete_showtimes'])) : array();
+        foreach ($delete_showtimes as $del_id) {
+            if (!$del_id || 'smv_showtime' !== get_post_type($del_id)) {
+                continue;
+            }
+            $del_owner = absint(get_post_meta($del_id, '_smv_theatre_id', true));
+            if ($del_owner && $del_owner !== $post_id && !current_user_can('delete_post', $del_id)) {
+                continue;
+            }
+            wp_delete_post($del_id, true);
+        }
+
         // به‌روزرسانی سانس‌های موجود (مقادیر فرم حفظ می‌شوند و ظرفیت رزرو صفر نمی‌شود)
         $existing_showtimes = isset($_POST['showtimes']) && is_array($_POST['showtimes']) ? wp_unslash($_POST['showtimes']) : array();
         foreach ($existing_showtimes as $st_id => $st_data) {
             $st_id = absint($st_id);
-            if (!$st_id || 'smv_showtime' !== get_post_type($st_id)) {
+            if (!$st_id || 'smv_showtime' !== get_post_type($st_id) || in_array($st_id, $delete_showtimes, true)) {
                 continue;
             }
             $owner = absint(get_post_meta($st_id, '_smv_theatre_id', true));
@@ -981,8 +1179,8 @@ class SMV_Admin {
             update_post_meta($st_id, '_smv_theatre_id', $post_id);
             update_post_meta($st_id, '_smv_showtime_date', $date);
             update_post_meta($st_id, '_smv_showtime_time', $time);
-            update_post_meta($st_id, '_smv_capacity', isset($st_data['capacity']) ? absint($st_data['capacity']) : 0);
-            update_post_meta($st_id, '_smv_showtime_price', isset($st_data['price']) ? absint(SMV_Persian::english_digits($st_data['price'])) : 0);
+            update_post_meta($st_id, '_smv_capacity', isset($st_data['capacity']) ? smv_parse_amount($st_data['capacity']) : 0);
+            update_post_meta($st_id, '_smv_showtime_price', isset($st_data['price']) ? smv_parse_amount($st_data['price']) : 0);
             update_post_meta($st_id, '_smv_showtime_venue', isset($st_data['venue']) ? sanitize_text_field($st_data['venue']) : '');
             wp_update_post(array(
                 'ID' => $st_id,
@@ -1012,22 +1210,26 @@ class SMV_Admin {
                 update_post_meta($st_post_id, '_smv_theatre_id', $post_id);
                 update_post_meta($st_post_id, '_smv_showtime_date', $date);
                 update_post_meta($st_post_id, '_smv_showtime_time', $time);
-                update_post_meta($st_post_id, '_smv_capacity', isset($st_data['capacity']) ? absint($st_data['capacity']) : 0);
+                update_post_meta($st_post_id, '_smv_capacity', isset($st_data['capacity']) ? smv_parse_amount($st_data['capacity']) : 0);
                 update_post_meta($st_post_id, '_smv_booked', 0);
-                update_post_meta($st_post_id, '_smv_showtime_price', isset($st_data['price']) ? absint(SMV_Persian::english_digits($st_data['price'])) : 0);
+                update_post_meta($st_post_id, '_smv_showtime_price', isset($st_data['price']) ? smv_parse_amount($st_data['price']) : 0);
                 update_post_meta($st_post_id, '_smv_showtime_venue', isset($st_data['venue']) ? sanitize_text_field($st_data['venue']) : '');
                 self::force_publish($st_post_id);
             }
         }
 
+        $saved_url = $post_id
+            ? add_query_arg(array('page' => 'smv-theatres', 'action' => 'edit', 'id' => $post_id, 'smv_saved' => 1), admin_url('admin.php'))
+            : add_query_arg(array('page' => 'smv-theatres', 'smv_saved' => 1), admin_url('admin.php'));
+
         if ($is_ajax) {
             wp_send_json_success(array(
                 'message' => 'تئاتر با موفقیت ذخیره شد.',
-                'redirect' => admin_url('admin.php?page=smv-theatres&smv_saved=1'),
+                'redirect' => $saved_url,
             ));
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=smv-theatres&smv_saved=1'));
+        wp_safe_redirect($saved_url);
         exit;
     }
 

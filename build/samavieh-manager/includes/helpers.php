@@ -59,6 +59,20 @@ function smv_payment_type_label($type) {
 }
 
 /**
+ * تبدیل ورودی کاربر به عدد صحیح: ارقام فارسی/عربی، جداکنندهٔ هزارگان، فاصله و واحد پول را پاک می‌کند.
+ * (مثلاً «۱۵۰,۰۰۰ تومان» → 150000)
+ */
+function smv_parse_amount($value) {
+    if (is_array($value) || is_object($value)) {
+        return 0;
+    }
+    $value = class_exists('SMV_Persian') ? SMV_Persian::english_digits((string) $value) : (string) $value;
+    $value = str_replace(array('٬', ',', '،', ' ', "\xC2\xA0", 'تومان', 'ریال'), '', $value);
+    $value = preg_replace('/[^0-9]/', '', $value);
+    return $value === '' ? 0 : absint($value);
+}
+
+/**
  * روش‌های پرداخت فعال یک تئاتر.
  * اگر هیچ روشی برای اجرا ذخیره نشده باشد (اجراهای قدیمی)، هر سه روش فعال در نظر گرفته می‌شود
  * تا فرم ثبت‌نام بدون تنظیم اضافی کار کند.
