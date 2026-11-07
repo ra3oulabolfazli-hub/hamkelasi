@@ -175,15 +175,35 @@ class SMV_Persian {
         return '';
     }
 
-    /** ساعت شروع و پایان سانس: «۱۸:۳۰ تا ۲۰:۰۰» */
+    /**
+     * نرمال‌سازی ساعت سانس به قالب ۲۴ ساعتهٔ «HH:MM» (مثلاً «18:30»).
+     * ارقام فارسی/عربی، «۱۸:۳۰» و «8:5» همه پذیرفته و به «08:05» تبدیل می‌شوند.
+     * قالب ۱۲ ساعته (AM/PM) عمداً پشتیبانی نمی‌شود تا ساعت همیشه ۲۴ ساعته بماند.
+     * ورودی نامعتبر → رشتهٔ خالی.
+     */
+    public static function normalize_time($value) {
+        $value = trim((string) self::english_digits((string) $value));
+        if ('' === $value) {
+            return '';
+        }
+        if (!preg_match('/^(\d{1,2})\s*[:.]\s*(\d{1,2})(?:\s*[:.]\s*\d{1,2})?$/', $value, $m)) {
+            return '';
+        }
+        $hour = (int) $m[1];
+        $minute = (int) $m[2];
+        if ($hour > 23 || $minute > 59) {
+            return '';
+        }
+        return sprintf('%02d:%02d', $hour, $minute);
+    }
+
+    /** ساعت شروع و پایان سانس به‌صورت ۲۴ ساعته: «۱۸:۳۰ تا ۲۰:۰۰» */
     public static function time_range($start, $end = '') {
-        $start = trim((string) self::english_digits((string) $start));
-        $end = trim((string) self::english_digits((string) $end));
+        $start = self::normalize_time($start);
+        $end = self::normalize_time($end);
         if ('' === $start) {
             return '' === $end ? '' : self::digits($end);
         }
-        $start = substr($start, 0, 5);
-        $end = substr($end, 0, 5);
         if ('' === $end || $end === $start) {
             return self::digits($start);
         }

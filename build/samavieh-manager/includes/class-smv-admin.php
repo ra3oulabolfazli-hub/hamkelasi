@@ -653,6 +653,20 @@ class SMV_Admin {
                             </div>
 
                             <div class="smv-admin-field full">
+                                <label><strong>تصویر عمودی تئاتر (کارت صفحهٔ اصلی)</strong></label>
+                                <div class="smv-image-upload" id="smv-portrait-upload">
+                                    <?php $portrait_id = $is_edit ? absint(isset($meta['_smv_portrait_image_id'][0]) ? $meta['_smv_portrait_image_id'][0] : 0) : 0; ?>
+                                    <?php if ($portrait_id) : ?>
+                                        <img src="<?php echo esc_url(wp_get_attachment_image_url($portrait_id, 'medium')); ?>" id="smv-portrait-preview" style="width:130px; aspect-ratio:3/4; object-fit:cover; border-radius:8px; margin-bottom:10px;" />
+                                    <?php endif; ?>
+                                    <input type="hidden" name="portrait_image_id" id="smv-portrait-id" value="<?php echo esc_attr($portrait_id); ?>" />
+                                    <button type="button" class="button smv-choose-image" id="smv-choose-portrait">انتخاب تصویر عمودی</button>
+                                    <button type="button" class="button smv-remove-image" id="smv-remove-portrait" <?php echo $portrait_id ? '' : 'style="display:none;"'; ?>>حذف تصویر عمودی</button>
+                                </div>
+                                <small>این تصویر جدا از پوستر است و به‌صورت <strong>عمودی (پرتره)</strong> روی کارت تئاتر در صفحهٔ اصلی نمایش داده می‌شود. بهتر است عکسی با نسبت حدود ۳:۴ (مثلاً ۶۰۰×۸۰۰) انتخاب کنید. اگر خالی بماند، پوستر اصلی استفاده می‌شود.</small>
+                            </div>
+
+                            <div class="smv-admin-field full">
                                 <label><strong>عکس‌های اجرا (گالری)</strong></label>
                                 <div class="smv-image-gallery" id="smv-gallery-upload">
                                     <?php
@@ -742,8 +756,8 @@ class SMV_Admin {
                                     </div>
                                     <div class="smv-showtime-grid">
                                         <label>تاریخ اجرا (شمسی) <input type="text" class="smv-date-input" inputmode="numeric" dir="ltr" name="showtimes[<?php echo esc_attr($st_id); ?>][date]" value="<?php echo esc_attr(SMV_Persian::date_input_value($st_date)); ?>" placeholder="۱۴۰۵/۰۲/۱۲" autocomplete="off" /></label>
-                                        <label>ساعت شروع <input type="time" step="60" name="showtimes[<?php echo esc_attr($st_id); ?>][time]" value="<?php echo esc_attr($st_time); ?>" /></label>
-                                        <label>ساعت پایان <input type="time" step="60" name="showtimes[<?php echo esc_attr($st_id); ?>][time_end]" value="<?php echo esc_attr($st_time_end); ?>" /></label>
+                                        <label>ساعت شروع (۲۴ ساعته) <input type="text" class="smv-time-input" dir="ltr" inputmode="numeric" maxlength="5" placeholder="18:30" autocomplete="off" name="showtimes[<?php echo esc_attr($st_id); ?>][time]" value="<?php echo esc_attr(SMV_Persian::normalize_time($st_time)); ?>" /></label>
+                                        <label>ساعت پایان (۲۴ ساعته) <input type="text" class="smv-time-input" dir="ltr" inputmode="numeric" maxlength="5" placeholder="20:00" autocomplete="off" name="showtimes[<?php echo esc_attr($st_id); ?>][time_end]" value="<?php echo esc_attr(SMV_Persian::normalize_time($st_time_end)); ?>" /></label>
                                         <label>اولویت در روز (۱=اول پر می‌شود) <input type="number" min="1" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][priority]" value="<?php echo absint(get_post_meta($st_id, '_smv_priority', true)) ? esc_attr(absint(get_post_meta($st_id, '_smv_priority', true))) : ''; ?>" placeholder="خودکار (ساعت)" /></label>
                                         <label>ظرفیت <input type="number" min="0" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][capacity]" value="<?php echo $st_capacity ? esc_attr($st_capacity) : ''; ?>" placeholder="نامحدود" /></label>
                                         <label>قیمت (تومان) <input type="number" min="0" step="1000" name="showtimes[<?php echo esc_attr($st_id); ?>][price]" value="<?php echo $st_price ? esc_attr($st_price) : ''; ?>" placeholder="رایگان" /></label>
@@ -815,8 +829,8 @@ class SMV_Admin {
                     </div>
                     <div class="smv-showtime-grid">
                         <label>تاریخ اجرا (شمسی) <input type="text" class="smv-date-input" inputmode="numeric" dir="ltr" name="new_showtime[__INDEX__][date]" value="" placeholder="۱۴۰۵/۰۲/۱۲" autocomplete="off" /></label>
-                        <label>ساعت شروع <input type="time" step="60" name="new_showtime[__INDEX__][time]" value="" /></label>
-                        <label>ساعت پایان <input type="time" step="60" name="new_showtime[__INDEX__][time_end]" value="" /></label>
+                        <label>ساعت شروع (۲۴ ساعته) <input type="text" class="smv-time-input" dir="ltr" inputmode="numeric" maxlength="5" placeholder="18:30" autocomplete="off" name="new_showtime[__INDEX__][time]" value="" /></label>
+                        <label>ساعت پایان (۲۴ ساعته) <input type="text" class="smv-time-input" dir="ltr" inputmode="numeric" maxlength="5" placeholder="20:00" autocomplete="off" name="new_showtime[__INDEX__][time_end]" value="" /></label>
                         <label>اولویت در روز (۱=اول پر می‌شود) <input type="number" min="1" step="1" name="new_showtime[__INDEX__][priority]" value="" placeholder="خودکار (ساعت)" /></label>
                         <label>ظرفیت <input type="number" min="0" step="1" name="new_showtime[__INDEX__][capacity]" value="" placeholder="نامحدود" /></label>
                         <label>قیمت (تومان) <input type="number" min="0" step="1000" name="new_showtime[__INDEX__][price]" value="" placeholder="رایگان" /></label>
@@ -869,6 +883,30 @@ class SMV_Admin {
                         $('#smv-remove-poster').on('click', function () {
                             $('#smv-poster-id').val('');
                             $('#smv-poster-preview').remove();
+                            $(this).hide();
+                        });
+                    } catch (err) { if (window.console) { console.error(err); } }
+
+                    /* ---------- تصویر عمودی کارت صفحهٔ اصلی ---------- */
+                    try {
+                        var portraitFrame;
+                        $('#smv-choose-portrait').on('click', function (e) {
+                            e.preventDefault();
+                            if (!window.wp || !wp.media) { window.alert('کتابخانهٔ رسانهٔ وردپرس بارگذاری نشده است. صفحه را دوباره بارگذاری کنید.'); return; }
+                            if (portraitFrame) { portraitFrame.open(); return; }
+                            portraitFrame = wp.media({ title: 'انتخاب تصویر عمودی تئاتر', button: { text: 'استفاده از این تصویر' }, multiple: false });
+                            portraitFrame.on('select', function () {
+                                var attachment = portraitFrame.state().get('selection').first().toJSON();
+                                $('#smv-portrait-id').val(attachment.id);
+                                $('#smv-portrait-preview').remove();
+                                $('#smv-portrait-upload').prepend('<img id="smv-portrait-preview" src="' + attachment.url + '" alt="" style="width:130px; aspect-ratio:3/4; object-fit:cover; border-radius:8px; margin-bottom:10px;" />');
+                                $('#smv-remove-portrait').show();
+                            });
+                            portraitFrame.open();
+                        });
+                        $('#smv-remove-portrait').on('click', function () {
+                            $('#smv-portrait-id').val('');
+                            $('#smv-portrait-preview').remove();
                             $(this).hide();
                         });
                     } catch (err) { if (window.console) { console.error(err); } }
@@ -1017,6 +1055,18 @@ class SMV_Admin {
                             var m = latin.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
                             if (m) {
                                 $(this).val(m[1] + '/' + ('0' + m[2]).slice(-2) + '/' + ('0' + m[3]).slice(-2));
+                            }
+                        });
+
+                        // نرمال‌سازی ساعت سانس به قالب ۲۴ ساعته (18:30) هنگام خروج از فیلد
+                        $(document).on('blur', 'input.smv-time-input', function () {
+                            var value = $.trim(String($(this).val() || ''));
+                            if (!value) { return; }
+                            var latin = value.replace(/[۰-۹]/g, function (d) { return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)); })
+                                             .replace(/[٠-٩]/g, function (d) { return String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)); });
+                            var m = latin.match(/^(\d{1,2})\s*[:.]\s*(\d{1,2})$/);
+                            if (m && Number(m[1]) <= 23 && Number(m[2]) <= 59) {
+                                $(this).val(('0' + m[1]).slice(-2) + ':' + ('0' + m[2]).slice(-2));
                             }
                         });
 
@@ -1176,6 +1226,16 @@ class SMV_Admin {
             delete_post_thumbnail($post_id);
         }
 
+        // تصویر عمودی کارت صفحهٔ اصلی (جدا از پوستر)
+        if (isset($_POST['portrait_image_id'])) {
+            $portrait_image_id = absint($_POST['portrait_image_id']);
+            if ($portrait_image_id) {
+                update_post_meta($post_id, '_smv_portrait_image_id', $portrait_image_id);
+            } else {
+                delete_post_meta($post_id, '_smv_portrait_image_id');
+            }
+        }
+
         // فیلدهای متنی
         $text_fields = array('director', 'writer', 'cast', 'show_time', 'duration', 'age_range', 'venue');
         foreach ($text_fields as $key) {
@@ -1277,8 +1337,8 @@ class SMV_Admin {
                 continue;
             }
             $date = isset($st_data['date']) ? SMV_Persian::parse_date_input($st_data['date']) : '';
-            $time = isset($st_data['time']) ? trim((string) SMV_Persian::english_digits($st_data['time'])) : '';
-            $time_end = isset($st_data['time_end']) ? trim((string) SMV_Persian::english_digits($st_data['time_end'])) : '';
+            $time = isset($st_data['time']) ? SMV_Persian::normalize_time($st_data['time']) : '';
+            $time_end = isset($st_data['time_end']) ? SMV_Persian::normalize_time($st_data['time_end']) : '';
             update_post_meta($st_id, '_smv_theatre_id', $post_id);
             update_post_meta($st_id, '_smv_showtime_date', $date);
             update_post_meta($st_id, '_smv_showtime_time', $time);
@@ -1299,8 +1359,8 @@ class SMV_Admin {
         $new_showtimes = isset($_POST['new_showtime']) && is_array($_POST['new_showtime']) ? wp_unslash($_POST['new_showtime']) : array();
         foreach ($new_showtimes as $st_data) {
             $date = isset($st_data['date']) ? SMV_Persian::parse_date_input($st_data['date']) : '';
-            $time = isset($st_data['time']) ? trim((string) SMV_Persian::english_digits($st_data['time'])) : '';
-            $time_end = isset($st_data['time_end']) ? trim((string) SMV_Persian::english_digits($st_data['time_end'])) : '';
+            $time = isset($st_data['time']) ? SMV_Persian::normalize_time($st_data['time']) : '';
+            $time_end = isset($st_data['time_end']) ? SMV_Persian::normalize_time($st_data['time_end']) : '';
             if (!$date && !$time && !$time_end) {
                 continue;
             }

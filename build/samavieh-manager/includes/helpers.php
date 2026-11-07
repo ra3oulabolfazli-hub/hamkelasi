@@ -77,6 +77,26 @@ function smv_registration_fixed_fee($theatre_id, $showtime_id = 0) {
 /**
  * عنوان فارسی سانس برای پنل و لیست‌های کشویی: «سانس ۱۲ اردیبهشت ۱۴۰۵ — ۱۸:۳۰ تا ۲۰:۰۰»
  */
+/**
+ * تصویر عمودی (پرتره) تئاتر برای کارت صفحهٔ اصلی.
+ * اول تصویر عمودیِ جداگانه‌ای که مدیر برای کارت اصلی انتخاب کرده، وگرنه پوستر/تصویر شاخص.
+ */
+function smv_theatre_portrait_url($theatre_id, $size = 'medium_large') {
+    $theatre_id = absint($theatre_id);
+    if (!$theatre_id) {
+        return '';
+    }
+    $portrait_id = absint(get_post_meta($theatre_id, '_smv_portrait_image_id', true));
+    if ($portrait_id) {
+        $url = wp_get_attachment_image_url($portrait_id, $size);
+        if ($url) {
+            return $url;
+        }
+    }
+    $url = get_the_post_thumbnail_url($theatre_id, $size);
+    return $url ? $url : '';
+}
+
 function smv_showtime_title($date, $time = '', $time_end = '') {
     $title = 'سانس';
     if ($date) {

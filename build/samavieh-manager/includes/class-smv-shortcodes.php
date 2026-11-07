@@ -184,8 +184,11 @@ class SMV_Shortcodes {
                 $director = get_post_meta($id, '_smv_director', true);
                 ?>
                 <article <?php post_class('smv-theatre-card'); ?>>
-                    <a class="smv-card-image" href="<?php the_permalink(); ?>" aria-label="مشاهده <?php the_title_attribute(); ?>">
-                        <?php if (has_post_thumbnail()) : the_post_thumbnail('medium_large', array('loading' => 'lazy')); else : ?>
+                    <a class="smv-card-image smv-card-image--portrait" href="<?php the_permalink(); ?>" aria-label="مشاهده <?php the_title_attribute(); ?>">
+                        <?php $card_image = smv_theatre_portrait_url($id); ?>
+                        <?php if ($card_image) : ?>
+                            <img src="<?php echo esc_url($card_image); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy" />
+                        <?php else : ?>
                             <img src="<?php echo esc_url(SMV_URL . 'assets/images/theatre-placeholder.svg'); ?>" alt="تصویر پیش‌فرض تئاتر" loading="lazy" />
                         <?php endif; ?>
                         <span class="smv-status-pill <?php echo $open ? 'is-open' : 'is-closed'; ?>"><i></i><?php echo $open ? 'ثبت‌نام باز' : 'ثبت‌نام بسته'; ?></span>

@@ -4,7 +4,7 @@ Tags: theatre, booking, registration, persian, rtl, elementor, zarinpal, pdf
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,11 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 پس از وارد کردن کد مرچنت در تنظیمات و فعال کردن روش «پرداخت آنلاین» برای اجرا، دکمهٔ پرداخت در دسترس است.
 
 == Changelog ==
+
+= 1.8.0 =
+* Real official logo image files for Rubika, Eitaa and Bale (provided by the admin) used on the social cards instead of drawn marks.
+* Showtime start/end times are strictly 24-hour (HH:MM) in the admin form and everywhere they are displayed; times are normalized server-side.
+* New separate vertical (portrait) theatre image, chosen in the media tab, shown on the homepage theatre cards (falls back to the poster).
 
 = 1.7.0 =
 * لوگوهای شبکه‌های اجتماعی اصلاح شدند: نشان‌های واقعی هر شبکه (روبیکا شش‌ضلعی رنگی با مکعب سفید، ایتا نارنجی، بله حباب سبزآبی با تیک، آپارات حلقه‌فیلم صورتی، تلگرام/اینستاگرام/یوتیوب/واتس‌اپ/ایکس استاندارد) به‌صورت SVG داخلی.

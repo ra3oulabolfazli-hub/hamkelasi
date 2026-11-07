@@ -547,3 +547,10 @@ a.smv-contact-card:hover { border-color: #c9a45f; box-shadow: var(--smv-shadow);
 .smv-social-tile-cta{display:inline-flex;align-items:center;gap:6px;color:var(--smv-brand,#9a7339);font-size:12px;font-weight:800;opacity:.75;transition:opacity .2s,gap .2s}
 .smv-social-tile:hover .smv-social-tile-cta{opacity:1;gap:9px}
 @media (prefers-reduced-motion:reduce){.smv-social-tile,.smv-social-tile-icon{transition:none}}
+
+/* ===== نسخه ۱.۸.۰: لوگوی تصویری شبکه‌ها + کارت عمودی تئاتر ===== */
+.smv-brand-img{display:block;width:100%;height:100%;object-fit:contain;border-radius:inherit}
+.smv-social-tile-icon .smv-brand-img{width:72px;height:72px;object-fit:contain;transition:transform .35s ease}
+.smv-social-tile:hover .smv-brand-img{transform:scale(1.08) rotate(-2deg)}
+.smv-card-image--portrait{aspect-ratio:3/4}
+.smv-card-image--portrait img{width:100%;height:100%;object-fit:cover}

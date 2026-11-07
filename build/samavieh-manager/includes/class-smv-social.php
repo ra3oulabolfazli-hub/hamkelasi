@@ -67,7 +67,24 @@ class SMV_Social {
         return '<svg class="smv-brand-svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="' . esc_attr($key) . '" focusable="false">' . $svg_inner . '</svg>';
     }
 
+    /**
+     * فایل لوگوی اصلیِ خود شبکه (همان فایل‌هایی که مدیریت فرستاده) — اگر برای شبکه‌ای
+     * فایل لوگوی اصلی هست، از همان تصویر استفاده می‌شود، نه ترسیم SVG.
+     */
+    public static function logo_image_url($key) {
+        $files = array(
+            'rubika' => 'rubika.png',
+            'eitaa' => 'eitaa.png',
+            'bale' => 'bale.png',
+        );
+        return isset($files[$key]) ? SMV_URL . 'assets/images/social/' . $files[$key] : '';
+    }
+
     private static function icon_html($key) {
+        $logo = self::logo_image_url($key);
+        if ($logo) {
+            return '<span class="smv-social-icon smv-social-icon--' . esc_attr($key) . '" aria-hidden="true"><img class="smv-brand-img" src="' . esc_url($logo) . '" alt="" loading="lazy" /></span>';
+        }
         return '<span class="smv-social-icon smv-social-icon--' . esc_attr($key) . '" aria-hidden="true">' . self::brand_svg($key) . '</span>';
     }
 
