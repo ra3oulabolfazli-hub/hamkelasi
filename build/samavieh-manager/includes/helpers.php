@@ -39,6 +39,23 @@ function smv_post_status_label($status) {
     return isset($labels[$status]) ? $labels[$status] : $status;
 }
 
+/**
+ * نمایش شمارهٔ کارت واریزی به‌صورت گروه‌های چهاررقمی با ارقام فارسی:
+ * «6037991234567890» → «۶۰۳۷ ۹۹۱۲ ۳۴۵۶ ۷۸۹۰» — خالی اگر کارتی ثبت نشده باشد.
+ */
+function smv_card_number_display() {
+    $number = preg_replace('/[^0-9]/', '', (string) smv_get_option('card_number', ''));
+    if ('' === $number) {
+        return '';
+    }
+    return SMV_Persian::digits(implode(' ', str_split($number, 4)));
+}
+
+/** شمارهٔ کارت واریزی خام (فقط رقم، برای دکمهٔ کپی) */
+function smv_card_number_raw() {
+    return preg_replace('/[^0-9]/', '', (string) smv_get_option('card_number', ''));
+}
+
 function smv_table_name() {
     global $wpdb;
     return $wpdb->prefix . 'smv_registrations';

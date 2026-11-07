@@ -12,6 +12,25 @@ class SMV_Booking {
     public static function init() {
         add_shortcode('samavieh_showtimes', array(__CLASS__, 'showtimes_shortcode'));
         add_shortcode('samavieh_seat_map', array(__CLASS__, 'seat_map_shortcode'));
+        add_action('template_redirect', array(__CLASS__, 'rescue_legacy_showtime_param'));
+    }
+
+    /**
+     * لینک‌های قدیمی «ثبت‌نام در این سانس» پارامتر ?smv_showtime=… داشتند که دقیقاً
+     * هم‌نام نوع‌نوشتهٔ smv_showtime بود و وردپرس آن را نشانی یک سانس حساب می‌کرد
+     * و چون سانسی با آن نام نبود «صفحه پیدا نشد» می‌داد؛ اینجا به پارامتر جدید برمی‌گردانیم.
+     */
+    public static function rescue_legacy_showtime_param() {
+        if (!is_404() || !isset($_GET['smv_showtime'])) {
+            return;
+        }
+        $showtime_id = absint(wp_unslash($_GET['smv_showtime']));
+        if (!$showtime_id) {
+            return;
+        }
+        $url = add_query_arg('smv_reg_showtime', $showtime_id, remove_query_arg('smv_showtime'));
+        wp_safe_redirect($url . '#smv-registration', 302);
+        exit;
     }
 
     public static function showtimes_shortcode($atts) {
@@ -120,7 +139,7 @@ class SMV_Booking {
                         <?php elseif ('waiting' === $state) : ?>
                             <button type="button" class="smv-button smv-button-disabled" disabled>🔒 پس از تکمیل سانس قبلی فعال می‌شود</button>
                         <?php elseif ($registration_target) : ?>
-                            <a href="<?php echo esc_url($registration_target . (false === strpos($registration_target, '?') ? '?' : '&') . 'smv_showtime=' . $id . '#smv-registration'); ?>" class="smv-button smv-button-primary">ثبت‌نام در این سانس</a>
+                            <a href="<?php echo esc_url($registration_target . (false === strpos($registration_target, '?') ? '?' : '&') . 'smv_reg_showtime=' . $id . '#smv-registration'); ?>" class="smv-button smv-button-primary">ثبت‌نام در این سانس</a>
                         <?php endif; ?>
                     </div>
                 </article>

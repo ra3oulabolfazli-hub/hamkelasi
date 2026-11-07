@@ -579,3 +579,12 @@ a.smv-contact-card:hover { border-color: #c9a45f; box-shadow: var(--smv-shadow);
   .smv-print-note{text-align:center;font-size:11px;color:#51635a;margin:12px 0 6px}
   .smv-print-foot{text-align:center;font-size:11px;color:#8a948f;border-top:1px solid #d8e0d8;padding-top:8px}
 }
+
+/* ===== نسخه ۱.۱۲.۰: شمارهٔ کارت واریزی (درشت و مشخص) ===== */
+.smv-card-number-box{background:linear-gradient(135deg,#0d3f36,#12584a);color:#fff;border:2px solid #c9a94e;border-radius:14px;padding:16px 18px;text-align:center;box-shadow:0 10px 26px rgba(13,51,46,.25)}
+.smv-card-number-label{display:block;font-size:13px;font-weight:700;color:#f2d98c;margin-bottom:6px}
+.smv-card-number-value{display:block;font-size:clamp(22px,4.5vw,30px);font-weight:900;letter-spacing:2px;line-height:1.5;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+.smv-card-number-holder{display:block;font-size:13px;margin-top:4px;color:#dff0e8}
+.smv-card-number-holder b{color:#f2d98c}
+.smv-card-copy{margin:10px auto 4px;background:#c9a94e;color:#173c32;border:none;font-weight:800}
+.smv-card-number-box small{display:block;font-size:11px;color:#bcd8cc;margin-top:6px}

@@ -512,7 +512,7 @@ class SMV_Shortcodes {
                                 <label for="smv-showtime-<?php echo esc_attr($theatre_id); ?>">انتخاب سانس <b>*</b></label>
                                 <select name="showtime_id" id="smv-showtime-<?php echo esc_attr($theatre_id); ?>" required>
                                     <?php if (empty($active_ids_by_day)) : ?><option value="">— همهٔ سانس‌ها تکمیل ظرفیت هستند —</option><?php endif; ?>
-                                    <?php $day_number = 0; $smv_default_selected_done = false; $smv_preferred_showtime = !empty($old['showtime_id']) ? absint($old['showtime_id']) : (isset($_GET['smv_showtime']) ? absint(wp_unslash($_GET['smv_showtime'])) : 0); foreach ($showtimes_by_day as $day_date => $day_items) : $day_number++; ?>
+                                    <?php $day_number = 0; $smv_default_selected_done = false; $smv_preferred_showtime = !empty($old['showtime_id']) ? absint($old['showtime_id']) : (isset($_GET['smv_reg_showtime']) ? absint(wp_unslash($_GET['smv_reg_showtime'])) : (isset($_GET['smv_showtime']) ? absint(wp_unslash($_GET['smv_showtime'])) : 0)); foreach ($showtimes_by_day as $day_date => $day_items) : $day_number++; ?>
                                         <optgroup label="روز <?php echo esc_attr(SMV_Persian::digits($day_number)); ?> — <?php echo esc_attr(SMV_Persian::date_with_weekday($day_date)); ?>">
                                         <?php foreach ($day_items as $st) : ?>
                                             <?php $is_default = false; if (!$smv_default_selected_done && 'active' === $st['state']) { $is_default = $smv_preferred_showtime ? ((int) $st['id'] === $smv_preferred_showtime) : true; } if ($is_default) { $smv_default_selected_done = true; } ?>
@@ -565,6 +565,19 @@ class SMV_Shortcodes {
                             </select>
                             <small>سه روش: «رایگان» بدون هزینه است؛ «هزینهٔ ثبت‌نام» مبلغش از قبل مشخص شده؛ در «کمک مالی» مبلغ را خودتان تعیین می‌کنید.</small>
                         </div>
+
+                        <!-- شمارهٔ کارت واریزی: درشت، پررنگ و جدا (از تنظیمات) -->
+                        <?php $card_display = function_exists('smv_card_number_display') ? smv_card_number_display() : ''; if ($card_display) : $card_raw = smv_card_number_raw(); $card_holder = trim((string) smv_get_option('card_holder', '')); ?>
+                        <div class="smv-field smv-field-full smv-card-number-field">
+                            <div class="smv-card-number-box">
+                                <span class="smv-card-number-label">💳 شمارهٔ کارت واریزی</span>
+                                <strong class="smv-card-number-value" dir="ltr"><?php echo esc_html($card_display); ?></strong>
+                                <?php if ($card_holder) : ?><span class="smv-card-number-holder">به نام: <b><?php echo esc_html($card_holder); ?></b></span><?php endif; ?>
+                                <button type="button" class="smv-copy-button smv-card-copy" data-smv-copy="<?php echo esc_attr($card_raw); ?>"><?php echo smv_icon('copy'); ?> کپی شماره کارت</button>
+                                <small>مبلغ را به این کارت واریز کنید و فیش آن را در بخش «فیش واریزی» بارگذاری کنید.</small>
+                            </div>
+                        </div>
+                        <?php endif; ?>
 
                         <!-- Fixed fee notice (هزینهٔ ثبت‌نام با مبلغ مشخص) -->
                         <div class="smv-field smv-field-full smv-fixed-fee-box" style="display:none;">
@@ -622,6 +635,8 @@ class SMV_Shortcodes {
                         if (amountField) amountField.style.display = (val === 'financial_aid') ? 'block' : 'none';
                         if (reasonField) reasonField.style.display = (val === 'financial_aid') ? 'block' : 'none';
                         if (feeBox) feeBox.style.display = (val === 'paid') ? 'block' : 'none';
+                        var cardBox = document.querySelector('.smv-card-number-field');
+                        if (cardBox) cardBox.style.display = (val === 'free') ? 'none' : 'block';
                         if (val === 'free') {
                             if (receiptField) receiptField.style.display = 'none';
                             if (receiptInput) receiptInput.removeAttribute('required');
@@ -645,7 +660,7 @@ class SMV_Shortcodes {
                     }
                     // اگر از دکمهٔ «ثبت‌نام در این سانس» آمده باشد، همان سانس خودکار انتخاب می‌شود.
                     try {
-                        var requestedShowtime = new URLSearchParams(window.location.search).get('smv_showtime');
+                        var requestedShowtime = new URLSearchParams(window.location.search).get('smv_reg_showtime') || new URLSearchParams(window.location.search).get('smv_showtime');
                         var stSelect = document.getElementById('smv-showtime-<?php echo esc_js($theatre_id); ?>');
                         if (requestedShowtime && stSelect) {
                             for (var oi = 0; oi < stSelect.options.length; oi++) {

@@ -52,6 +52,8 @@ class SMV_Settings {
             'receipt_max_size' => 5,
             'success_message' => 'درخواست ثبت‌نام شما ثبت شد. تأیید نهایی پس از بررسی فیش واریزی انجام می‌شود.',
             'payment_instructions' => '',
+            'card_number' => '',
+            'card_holder' => '',
             'terms_text' => "با توجه به هزینه‌ی برگزاری سوگواره و محدودیت ظرفیت، خواهشمندیم به عنوان یک دِین شرعی به ازای هر رزرو، حتماً در مراسم حضور داشته باشید.\nعدم حضور شما موجب محرومیت دیگران از حضور در سوگواره می‌شود.",
             'rules' => "با توجه به هزینه‌ی برگزاری سوگواره و محدودیت ظرفیت، خواهشمندیم به عنوان یک دِین شرعی به ازای هر رزرو، حتماً در مراسم حضور داشته باشید.\nعدم حضور شما موجب محرومیت دیگران از حضور در سوگواره می‌شود.",
         );
@@ -94,6 +96,9 @@ class SMV_Settings {
         $output['sms_custom_url'] = isset($input['sms_custom_url']) ? esc_url_raw($input['sms_custom_url']) : '';
         $output['sms_template'] = isset($input['sms_template']) ? sanitize_textarea_field($input['sms_template']) : '';
         $output['sms_admin_phone'] = isset($input['sms_admin_phone']) ? preg_replace('/[^0-9]/', '', SMV_Persian::english_digits($input['sms_admin_phone'])) : '';
+        // شمارهٔ کارت واریزی: فقط ارقام (فارسی هم قبول است) و حداکثر ۱۹ رقم؛ نام صاحب کارت متن ساده.
+        $output['card_number'] = isset($input['card_number']) ? substr(preg_replace('/[^0-9]/', '', SMV_Persian::english_digits($input['card_number'])), 0, 19) : '';
+        $output['card_holder'] = isset($input['card_holder']) ? sanitize_text_field($input['card_holder']) : '';
         // متن قوانین، همان متن رضایت‌نامهٔ قدیمی هم نگه داشته می‌شود تا سازگاری حفظ شود.
         $output['rules'] = $output['terms_text'];
         $output['tracking_page_id'] = isset($input['tracking_page_id']) ? absint($input['tracking_page_id']) : 0;
@@ -219,6 +224,10 @@ class SMV_Settings {
                             <small>صفحه‌ای که شورت‌کد [samavieh_tracking] در آن قرار دارد.</small>
                         </div>
                         <?php self::input('receipt_max_size', 'حداکثر حجم فیش (مگابایت)', $options['receipt_max_size'], 'number', 'عددی بین ۱ تا ۱۰'); ?>
+                    </div>
+                    <div class="smv-settings-grid">
+                        <?php self::input('card_number', 'شمارهٔ کارت واریزی', isset($options['card_number']) ? $options['card_number'] : '', 'text', '۱۶ رقم کارت بانکی برای واریز هزینهٔ ثبت‌نام/کمک مالی؛ در فرم ثبت‌نام به‌صورت درشت و پررنگ نمایش داده می‌شود.'); ?>
+                        <?php self::input('card_holder', 'نام صاحب کارت', isset($options['card_holder']) ? $options['card_holder'] : '', 'text', 'نام صاحب کارت را هم بنویسید تا واریز اشتباه نشود (اختیاری).'); ?>
                     </div>
                     <?php self::textarea('payment_instructions', 'راهنمای واریز (بالای فرم ثبت‌نام)', $options['payment_instructions'], 3); ?>
                     <p class="smv-settings-help">می‌توانید شماره کارت/حساب، نام صاحب حساب و توضیح لازم برای واریز را اینجا بنویسید. اگر خالی باشد، این بخش در سایت نمایش داده نمی‌شود.</p>
