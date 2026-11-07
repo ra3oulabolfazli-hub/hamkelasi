@@ -249,6 +249,20 @@ class SMV_Forms {
         set_transient($rate_key, 1, MINUTE_IN_SECONDS);
         self::notify_admin($tracking_code, $theatre_id, $showtime_id, $old, $phone, $payment_type, $amount);
 
+        // پیامک ثبت‌نام (کد پیگیری ۴ رقمی) برای ثبت‌نام‌کننده
+        if (class_exists('SMV_SMS')) {
+            SMV_SMS::send_registration(array(
+                'phone' => $phone,
+                'first_name' => $old['first_name'],
+                'last_name' => $old['last_name'],
+                'code' => $tracking_code,
+                'theatre' => get_the_title($theatre_id),
+                'showtime' => $showtime_id ? get_the_title($showtime_id) : '',
+                'amount' => $amount ? SMV_Persian::money($amount) : 'رایگان',
+                'status' => smv_status_label('pending'),
+            ));
+        }
+
         self::redirect('register', array(
             'success' => true,
             'message' => smv_get_option('success_message'),
@@ -260,19 +274,21 @@ class SMV_Forms {
         ));
     }
 
+    /**
+     * کد پیگیری ۴ رقمی یکتا (مثلاً ۴۲۱۷).
+     * اگر همهٔ کدهای چهاررقمی استفاده شده باشند (بیش از ۹۰۰۰ ثبت‌نام)، باز هم کد چهاررقمی برمی‌گردد.
+     */
     private static function generate_tracking_code() {
         global $wpdb;
         $table = smv_table_name();
-        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        do {
-            $random = '';
-            for ($i = 0; $i < 8; $i++) {
-                $random .= $alphabet[random_int(0, strlen($alphabet) - 1)];
-            }
-            $code = 'SMV-' . $random;
+        for ($attempt = 0; $attempt < 80; $attempt++) {
+            $code = (string) random_int(1000, 9999);
             $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$table} WHERE tracking_code = %s", $code));
-        } while ($exists);
-        return $code;
+            if (!$exists) {
+                return $code;
+            }
+        }
+        return (string) random_int(1000, 9999);
     }
 
     private static function store_receipt($file) {
@@ -385,13 +401,16 @@ class SMV_Forms {
         if (!$nonce || !wp_verify_nonce($nonce, 'smv_track')) {
             self::fail('اعتبار فرم منقضی شده است. صفحه را تازه‌سازی کنید.', array(), 'track', 'smv-tracking');
         }
-        $code = isset($_POST['tracking_code']) ? strtoupper(sanitize_text_field(wp_unslash($_POST['tracking_code']))) : '';
-        $code = preg_replace('/\s+/', '', $code);
+        $code = isset($_POST['tracking_code']) ? sanitize_text_field(wp_unslash($_POST['tracking_code'])) : '';
+        $code = SMV_Persian::english_digits($code);
+        $code = strtoupper(preg_replace('/\s+/', '', $code));
         $raw_phone = isset($_POST['phone']) ? sanitize_text_field(wp_unslash($_POST['phone'])) : '';
         $phone = SMV_Persian::normalize_phone($raw_phone);
         $old = array('tracking_code' => $code, 'phone' => $raw_phone);
 
-        if (!preg_match('/^SMV-[A-Z2-9]{8}$/', $code) || !preg_match('/^09\d{9}$/', $phone)) {
+        // کد پیگیری جدید ۴ رقمی است؛ کدهای قدیمی‌تر (SMV-XXXXXXXX) هم برای سازگاری پذیرفته می‌شوند.
+        $valid_code = (bool) preg_match('/^\d{4}$/', $code) || (bool) preg_match('/^SMV-[A-Z2-9]{8}$/', $code);
+        if (!$valid_code || !preg_match('/^09\d{9}$/', $phone)) {
             self::fail('کد پیگیری و شماره تماس را کامل و صحیح وارد کنید.', $old, 'track', 'smv-tracking');
         }
 

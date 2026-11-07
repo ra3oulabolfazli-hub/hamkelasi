@@ -38,6 +38,9 @@ final class SMV_Plugin {
         if (class_exists('SMV_Social')) {
             SMV_Social::init();
         }
+        if (class_exists('SMV_SMS')) {
+            SMV_SMS::init();
+        }
         if (class_exists('SMV_Backup')) {
             SMV_Backup::init();
         }

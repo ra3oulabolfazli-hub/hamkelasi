@@ -1653,7 +1653,18 @@ class SMV_Admin {
         }
         $note = isset($_POST['admin_note']) ? sanitize_textarea_field(wp_unslash($_POST['admin_note'])) : '';
         global $wpdb;
-        $wpdb->update(smv_table_name(), array('status' => $status, 'admin_note' => $note, 'updated_at' => current_time('mysql')), array('id' => $id), array('%s', '%s', '%s'), array('%d'));
+        $table = smv_table_name();
+        $previous = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id = %d", $id));
+        $wpdb->update($table, array('status' => $status, 'admin_note' => $note, 'updated_at' => current_time('mysql')), array('id' => $id), array('%s', '%s', '%s'), array('%d'));
+
+        // پیامک تغییر وضعیت (فقط اگر وضعیت واقعاً تغییر کرده باشد)
+        if ($previous && isset($previous->status) && $previous->status !== $status && class_exists('SMV_SMS')) {
+            if (method_exists('SMV_SMS', 'send_status_update')) {
+                $updated_row = clone $previous;
+                $updated_row->status = $status;
+                SMV_SMS::send_status_update($updated_row, smv_status_label($status));
+            }
+        }
         $url = (!empty($_POST['return_to']) && 'details' === $_POST['return_to']) ? admin_url('admin.php?page=smv-registrations&action=view&id=' . $id) : admin_url('admin.php?page=smv-registrations');
         wp_safe_redirect(add_query_arg('smv_updated', 1, $url));
         exit;

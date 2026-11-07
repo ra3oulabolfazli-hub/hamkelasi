@@ -438,3 +438,27 @@ a.smv-contact-card:hover { border-color: #c9a45f; box-shadow: var(--smv-shadow);
 @media (max-width: 560px) {
   .smv-form-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== شبکه‌های اجتماعی: نشان رنگی هر شبکه (روبیکا، بله، ایتا، آپارات…) ===== */
+.smv-social-icon { display:inline-grid; place-items:center; width:44px; height:44px; min-width:44px; border-radius:14px; color:#fff; font-weight:900; font-size:18px; line-height:1; letter-spacing:-.5px; box-shadow:0 6px 16px rgba(15,55,49,.14); }
+.smv-social-icon--rubika { background:linear-gradient(135deg,#7b2ff7,#c026d3); }
+.smv-social-icon--eitaa { background:linear-gradient(135deg,#f2682a,#d1341c); }
+.smv-social-icon--bale { background:linear-gradient(135deg,#1f9cf0,#1266c9); }
+.smv-social-icon--telegram { background:linear-gradient(135deg,#37aee2,#1e96c8); }
+.smv-social-icon--instagram { background:radial-gradient(circle at 30% 110%,#fdc468,#df4996 45%,#8a3ab9 75%,#4c68d7); }
+.smv-social-icon--aparat { background:linear-gradient(135deg,#ee3d3d,#b81b1b); }
+.smv-social-icon--youtube { background:linear-gradient(135deg,#ff4b4b,#c4302b); }
+.smv-social-icon--whatsapp { background:linear-gradient(135deg,#3fd457,#1ba93a); }
+.smv-social-icon--twitter { background:linear-gradient(135deg,#2b2b2b,#000); }
+
+.smv-social-card { transition:box-shadow .2s,border-color .2s,transform .2s; }
+.smv-social-card:hover { transform:translateY(-2px); box-shadow:0 14px 34px rgba(15,55,49,.10); border-color:#e0d4b6; }
+.smv-social-links a.smv-social-link { display:inline-flex; align-items:center; gap:7px; padding:5px 12px 5px 6px; border-radius:999px; }
+.smv-social-links .smv-social-link .smv-social-icon { width:24px; height:24px; min-width:24px; border-radius:8px; font-size:11px; box-shadow:none; }
+.smv-social-links a.smv-social-link:hover { background:#fff7e6; border-color:#dcc59a; }
+
+@media (max-width:560px) {
+  .smv-social-card { flex-wrap:wrap; }
+  .smv-social-cta { width:100%; justify-content:flex-start; }
+  .smv-social-links { gap:6px; }
+}
