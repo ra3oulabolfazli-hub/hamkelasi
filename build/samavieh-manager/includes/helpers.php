@@ -56,6 +56,35 @@ function smv_card_number_raw() {
     return preg_replace('/[^0-9]/', '', (string) smv_get_option('card_number', ''));
 }
 
+/**
+ * فیلدهای اطلاعاتی اجرا که مدیر می‌تواند نمایش هر کدام را در سایت روشن/خاموش کند.
+ * کلید = نام متا بدون پیشوند _smv_ و برچسب فارسی برای پنل.
+ */
+function smv_theatre_display_fields() {
+    return array(
+        'director' => 'کارگردان',
+        'writer' => 'نویسنده',
+        'cast' => 'بازیگران',
+        'age_range' => 'ردهٔ سنی',
+        'duration' => 'مدت اجرا',
+        'venue' => 'محل اجرا',
+    );
+}
+
+/**
+ * آیا این فیلد اطلاعاتی برای این اجرا در سایت نمایش داده شود؟
+ * پیش‌فرض «روشن» است تا اجراهای قدیمی که هنوز تنظیم نشده‌اند چیزی از دست ندهند؛
+ * فقط وقتی مدیر صریحاً تیکش را برداشته باشد ('0') مخفی می‌شود.
+ */
+function smv_field_visible($theatre_id, $field) {
+    $settings = get_post_meta($theatre_id, '_smv_display_fields', true);
+    $settings = maybe_unserialize($settings);
+    if (!is_array($settings) || !isset($settings[$field])) {
+        return true;
+    }
+    return '1' === (string) $settings[$field] || true === $settings[$field];
+}
+
 function smv_table_name() {
     global $wpdb;
     return $wpdb->prefix . 'smv_registrations';

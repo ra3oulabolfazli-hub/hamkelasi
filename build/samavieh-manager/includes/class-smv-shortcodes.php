@@ -195,11 +195,11 @@ class SMV_Shortcodes {
                     </a>
                     <div class="smv-card-body">
                         <h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-                        <?php if ($director) : ?><div class="smv-card-meta-item"><?php echo smv_icon('user'); ?><?php echo esc_html('کارگردان: ' . $director); ?></div><?php endif; ?>
+                        <?php if ($director && function_exists('smv_field_visible') && smv_field_visible($id, 'director')) : ?><div class="smv-card-meta-item"><?php echo smv_icon('user'); ?><?php echo esc_html('کارگردان: ' . $director); ?></div><?php endif; ?>
                         <p><?php echo esc_html(wp_trim_words(get_the_excerpt(), 18, '…')); ?></p>
                         <div class="smv-card-meta">
                             <?php if ($date) : ?><span><?php echo smv_icon('calendar'); ?><?php echo esc_html(SMV_Persian::date($date)); ?></span><?php endif; ?>
-                            <?php if ($venue) : ?><span><?php echo smv_icon('pin'); ?><?php echo esc_html($venue); ?></span><?php endif; ?>
+                            <?php if ($venue && function_exists('smv_field_visible') && smv_field_visible($id, 'venue')) : ?><span><?php echo smv_icon('pin'); ?><?php echo esc_html($venue); ?></span><?php endif; ?>
                         </div>
                         <div class="smv-card-footer"><?php if ($show_price) : ?><strong><?php echo esc_html(SMV_Persian::money($price)); ?></strong><?php endif; ?><a href="<?php the_permalink(); ?>"><?php echo $open ? 'جزئیات و ثبت‌نام' : 'مشاهده جزئیات'; ?> <?php echo smv_icon('arrow'); ?></a></div>
                     </div>
@@ -343,6 +343,7 @@ class SMV_Shortcodes {
                     'registration_deadline' => array('مهلت ثبت‌نام', 'calendar', $registration_deadline ? SMV_Persian::date($registration_deadline) : ''),
                 ) as $key => $item) :
                     if (empty($item[2])) { continue; }
+                    if (function_exists('smv_theatre_display_fields') && array_key_exists($key, smv_theatre_display_fields()) && function_exists('smv_field_visible') && !smv_field_visible($id, $key)) { continue; }
                     ?>
                     <div class="smv-detail-item"><span><?php echo smv_icon($item[1]); ?></span><div><small><?php echo esc_html($item[0]); ?></small><strong><?php echo esc_html($item[2]); ?></strong></div></div>
                 <?php endforeach; ?>

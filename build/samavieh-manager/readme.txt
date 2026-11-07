@@ -4,7 +4,7 @@ Tags: theatre, booking, registration, persian, rtl, elementor, zarinpal, pdf
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.12.0
+Stable tag: 1.13.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,9 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 پس از وارد کردن کد مرچنت در تنظیمات و فعال کردن روش «پرداخت آنلاین» برای اجرا، دکمهٔ پرداخت در دسترس است.
 
 == Changelog ==
+
+= 1.13.0 =
+* Director, writer, cast, age range, duration and venue can each be shown or hidden on the site per theatre (display toggles in the theatre editor, on by default).
 
 = 1.12.0 =
 * Fixed “page not found” when clicking Register for this showtime: the link parameter no longer collides with the showtime post-type query var (smv_reg_showtime), and legacy links are rescued to the correct URL.

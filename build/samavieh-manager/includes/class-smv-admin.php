@@ -633,6 +633,16 @@ class SMV_Admin {
                                 <label for="smv-duration"><strong>مدت اجرا</strong></label>
                                 <input type="text" id="smv-duration" name="duration" value="<?php echo esc_attr(isset($meta['_smv_duration'][0]) ? $meta['_smv_duration'][0] : ''); ?>" placeholder="مثلاً ۹۰ دقیقه" />
                             </div>
+                            <div class="smv-admin-field full">
+                                <label><strong>نمایش اطلاعات در سایت (روشن / خاموش)</strong></label>
+                                <?php $display_fields_saved = ($is_edit && isset($meta['_smv_display_fields'][0])) ? maybe_unserialize($meta['_smv_display_fields'][0]) : array(); if (!is_array($display_fields_saved)) { $display_fields_saved = array(); } ?>
+                                <div class="smv-display-toggles" style="display:flex; flex-wrap:wrap; gap:8px 18px; background:#f7faf8; border:1px solid #e3e9e4; border-radius:10px; padding:12px 14px;">
+                                    <?php foreach (smv_theatre_display_fields() as $df_key => $df_label) : $df_on = !isset($display_fields_saved[$df_key]) || '1' === (string) $display_fields_saved[$df_key]; ?>
+                                        <label style="display:inline-flex; align-items:center; gap:6px; font-size:13px;"><input type="checkbox" name="display_fields[<?php echo esc_attr($df_key); ?>]" value="1" <?php checked($df_on); ?> /> نمایش <?php echo esc_html($df_label); ?></label>
+                                    <?php endforeach; ?>
+                                </div>
+                                <small>تیک هر موردی را بردارید، همان اطلاعات از صفحهٔ تئاتر و کارت‌های اجرا در سایت مخفی می‌شود (خود مقدار پاک نمی‌شود و هر وقت خواستید تیک را برگردانید). تیکِ پیش‌فرض همه روشن است.</small>
+                            </div>
                         </div>
                     </div>
 
@@ -1265,6 +1275,14 @@ class SMV_Admin {
             $value = isset($_POST[$key]) ? smv_parse_amount(wp_unslash($_POST[$key])) : 0;
             update_post_meta($post_id, '_smv_' . $key, $value);
         }
+
+        // روشن/خاموش بودن نمایش فیلدهای اطلاعاتی (کارگردان، نویسنده و...) در سایت
+        $display_fields_in = isset($_POST['display_fields']) && is_array($_POST['display_fields']) ? wp_unslash($_POST['display_fields']) : array();
+        $display_fields_out = array();
+        foreach (smv_theatre_display_fields() as $df_key => $df_label) {
+            $display_fields_out[$df_key] = !empty($display_fields_in[$df_key]) ? '1' : '0';
+        }
+        update_post_meta($post_id, '_smv_display_fields', $display_fields_out);
 
         update_post_meta($post_id, '_smv_registration_status', $registration_status);
         $posted_fill_mode = isset($_POST['showtime_fill_mode']) ? sanitize_key(wp_unslash($_POST['showtime_fill_mode'])) : 'ordered';
