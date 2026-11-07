@@ -526,3 +526,7 @@ input.smv-date-input:invalid { border-color:#d98b80; }
   .smv-sms-test-row input[type=tel] { max-width:none; width:100%; font-size:16px; min-height:44px; }
   .smv-sms-test-row .button { width:100%; min-height:44px; }
 }
+
+/* ثبت‌نام دستی سانس (نسخه ۱.۹.۰) */
+.smv-showtime-manual-hint { display:flex; align-items:flex-start; gap:6px; font-size:10px; color:#7a6a35; background:#fdf8e7; border:1px dashed #e5d89a; border-radius:8px; padding:6px 9px; line-height:1.9; margin:8px 0 0; }
+.smv-showtime-manual-hint .dashicons { font-size:14px; width:14px; height:14px; flex:0 0 auto; margin-top:2px; }

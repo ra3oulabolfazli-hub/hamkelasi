@@ -741,14 +741,16 @@ class SMV_Admin {
                                 $st_capacity = absint(get_post_meta($st_id, '_smv_capacity', true));
                                 $st_price = absint(get_post_meta($st_id, '_smv_showtime_price', true));
                                 $st_venue = get_post_meta($st_id, '_smv_showtime_venue', true);
-                                $st_booked = smv_showtime_booked_count($st_id);
+                                $st_online_booked = smv_showtime_online_booked_count($st_id);
+                                $st_manual_booked = smv_showtime_manual_booked_count($st_id);
+                                $st_booked = $st_online_booked + $st_manual_booked;
                                 $st_status = get_post_status($st_id);
                                 ?>
                                 <div class="smv-showtime-item" data-id="<?php echo esc_attr($st_id); ?>" data-mode="existing">
                                     <div class="smv-showtime-item-head">
                                         <span class="smv-showtime-num"><?php echo esc_html(SMV_Persian::digits($st_index)); ?></span>
                                         <span class="smv-showtime-title">سانس <?php echo esc_html(SMV_Persian::date($st_date)); ?><?php echo ($st_time || $st_time_end) ? ' — ' . esc_html(SMV_Persian::time_range($st_time, $st_time_end)) : ''; ?></span>
-                                        <span class="smv-showtime-capacity">رزرو‌شده: <?php echo esc_html(SMV_Persian::digits($st_booked)); ?><?php echo $st_capacity ? ' از ' . esc_html(SMV_Persian::digits($st_capacity)) : ''; ?></span>
+                                        <span class="smv-showtime-capacity">رزرو‌شده: <?php echo esc_html(SMV_Persian::digits($st_booked)); ?><?php echo $st_capacity ? ' از ' . esc_html(SMV_Persian::digits($st_capacity)) : ''; ?><?php if ($st_manual_booked) : ?> <small>(سایت: <?php echo esc_html(SMV_Persian::digits($st_online_booked)); ?> + دستی: <?php echo esc_html(SMV_Persian::digits($st_manual_booked)); ?>)</small><?php endif; ?></span>
                                         <?php if ('publish' !== $st_status) : ?><span class="smv-showtime-status"><?php echo esc_html(smv_post_status_label($st_status)); ?></span><?php endif; ?>
                                         <button type="button" class="smv-remove-showtime" data-id="<?php echo esc_attr($st_id); ?>" data-mode="existing" title="حذف این سانس">
                                             <span class="dashicons dashicons-trash"></span> حذف
@@ -759,10 +761,12 @@ class SMV_Admin {
                                         <label>ساعت شروع (۲۴ ساعته) <input type="text" class="smv-time-input" dir="ltr" inputmode="numeric" maxlength="5" placeholder="18:30" autocomplete="off" name="showtimes[<?php echo esc_attr($st_id); ?>][time]" value="<?php echo esc_attr(SMV_Persian::normalize_time($st_time)); ?>" /></label>
                                         <label>ساعت پایان (۲۴ ساعته) <input type="text" class="smv-time-input" dir="ltr" inputmode="numeric" maxlength="5" placeholder="20:00" autocomplete="off" name="showtimes[<?php echo esc_attr($st_id); ?>][time_end]" value="<?php echo esc_attr(SMV_Persian::normalize_time($st_time_end)); ?>" /></label>
                                         <label>اولویت در روز (۱=اول پر می‌شود) <input type="number" min="1" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][priority]" value="<?php echo absint(get_post_meta($st_id, '_smv_priority', true)) ? esc_attr(absint(get_post_meta($st_id, '_smv_priority', true))) : ''; ?>" placeholder="خودکار (ساعت)" /></label>
-                                        <label>ظرفیت <input type="number" min="0" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][capacity]" value="<?php echo $st_capacity ? esc_attr($st_capacity) : ''; ?>" placeholder="نامحدود" /></label>
+                                        <label>ظرفیت کل (نفر) <input type="number" min="0" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][capacity]" value="<?php echo $st_capacity ? esc_attr($st_capacity) : ''; ?>" placeholder="نامحدود" /></label>
+                                        <label>ثبت‌نام دستی (نفر) <input type="number" min="0" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][manual_booked]" value="<?php echo $st_manual_booked ? esc_attr($st_manual_booked) : ''; ?>" placeholder="۰" title="تعداد ثبت‌نام‌های خارج از سایت (حضوری/تلفنی)؛ به ثبت‌نام‌های سایت اضافه و از ظرفیت کم می‌شود." /></label>
                                         <label>قیمت (تومان) <input type="number" min="0" step="1000" name="showtimes[<?php echo esc_attr($st_id); ?>][price]" value="<?php echo $st_price ? esc_attr($st_price) : ''; ?>" placeholder="رایگان" /></label>
                                         <label class="smv-showtime-venue">محل اجرا <input type="text" name="showtimes[<?php echo esc_attr($st_id); ?>][venue]" value="<?php echo esc_attr($st_venue); ?>" placeholder="مثلاً سالن اصلی" /></label>
                                     </div>
+                                    <p class="smv-showtime-manual-hint"><span class="dashicons dashicons-edit"></span> «ثبت‌نام دستی» برای رزروهای حضوری/تلفنی است: هر عددی وارد کنید به ثبت‌نام‌های سایت اضافه می‌شود، ظرفیت باقی‌مانده کم می‌شود و اگر مجموع به ظرفیت کل برسد سانس «تکمیل ظرفیت» می‌شود. برای برگرداندن، عدد را صفر کنید.</p>
                                     <input type="hidden" name="showtimes[<?php echo esc_attr($st_id); ?>][id]" value="<?php echo esc_attr($st_id); ?>" />
                                 </div>
                             <?php endforeach; ?>
@@ -832,7 +836,8 @@ class SMV_Admin {
                         <label>ساعت شروع (۲۴ ساعته) <input type="text" class="smv-time-input" dir="ltr" inputmode="numeric" maxlength="5" placeholder="18:30" autocomplete="off" name="new_showtime[__INDEX__][time]" value="" /></label>
                         <label>ساعت پایان (۲۴ ساعته) <input type="text" class="smv-time-input" dir="ltr" inputmode="numeric" maxlength="5" placeholder="20:00" autocomplete="off" name="new_showtime[__INDEX__][time_end]" value="" /></label>
                         <label>اولویت در روز (۱=اول پر می‌شود) <input type="number" min="1" step="1" name="new_showtime[__INDEX__][priority]" value="" placeholder="خودکار (ساعت)" /></label>
-                        <label>ظرفیت <input type="number" min="0" step="1" name="new_showtime[__INDEX__][capacity]" value="" placeholder="نامحدود" /></label>
+                        <label>ظرفیت کل (نفر) <input type="number" min="0" step="1" name="new_showtime[__INDEX__][capacity]" value="" placeholder="نامحدود" /></label>
+                        <label>ثبت‌نام دستی (نفر) <input type="number" min="0" step="1" name="new_showtime[__INDEX__][manual_booked]" value="" placeholder="۰" title="رزروهای خارج از سایت (حضوری/تلفنی)؛ از ظرفیت کم می‌شود." /></label>
                         <label>قیمت (تومان) <input type="number" min="0" step="1000" name="new_showtime[__INDEX__][price]" value="" placeholder="رایگان" /></label>
                         <label class="smv-showtime-venue">محل اجرا <input type="text" name="new_showtime[__INDEX__][venue]" value="" placeholder="مثلاً سالن اصلی" /></label>
                     </div>
@@ -1128,6 +1133,10 @@ class SMV_Admin {
                                 if (capacity !== '' && (!/^\d+$/.test(capacity) || parseInt(capacity, 10) < 0)) {
                                     errors.push(label + ': ظرفیت باید عدد صحیح باشد.');
                                 }
+                                var manualBooked = $.trim($row.find('input[name$="[manual_booked]"]').val() || '');
+                                if (manualBooked !== '' && !/^\d+$/.test(latinDigits(manualBooked))) {
+                                    errors.push(label + ': «ثبت‌نام دستی» باید عدد صحیح باشد.');
+                                }
                                 if (price !== '' && !/^\d+$/.test(price)) {
                                     errors.push(label + ': قیمت باید عدد باشد.');
                                 }
@@ -1344,6 +1353,7 @@ class SMV_Admin {
             update_post_meta($st_id, '_smv_showtime_time', $time);
             update_post_meta($st_id, '_smv_showtime_time_end', $time_end);
             update_post_meta($st_id, '_smv_capacity', isset($st_data['capacity']) ? smv_parse_amount($st_data['capacity']) : 0);
+            update_post_meta($st_id, '_smv_manual_booked', isset($st_data['manual_booked']) ? smv_parse_amount($st_data['manual_booked']) : 0);
             update_post_meta($st_id, '_smv_priority', isset($st_data['priority']) ? absint($st_data['priority']) : 0);
             update_post_meta($st_id, '_smv_showtime_price', isset($st_data['price']) ? smv_parse_amount($st_data['price']) : 0);
             update_post_meta($st_id, '_smv_showtime_venue', isset($st_data['venue']) ? sanitize_text_field($st_data['venue']) : '');
@@ -1378,6 +1388,7 @@ class SMV_Admin {
                 update_post_meta($st_post_id, '_smv_showtime_time', $time);
                 update_post_meta($st_post_id, '_smv_showtime_time_end', $time_end);
                 update_post_meta($st_post_id, '_smv_capacity', isset($st_data['capacity']) ? smv_parse_amount($st_data['capacity']) : 0);
+                update_post_meta($st_post_id, '_smv_manual_booked', isset($st_data['manual_booked']) ? smv_parse_amount($st_data['manual_booked']) : 0);
                 update_post_meta($st_post_id, '_smv_priority', isset($st_data['priority']) ? absint($st_data['priority']) : 0);
                 update_post_meta($st_post_id, '_smv_booked', 0);
                 update_post_meta($st_post_id, '_smv_showtime_price', isset($st_data['price']) ? smv_parse_amount($st_data['price']) : 0);

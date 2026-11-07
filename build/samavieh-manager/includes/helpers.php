@@ -190,11 +190,10 @@ function smv_theatre_registration_open($theatre_id) {
 }
 
 /**
- * تعداد ثبت‌نام‌های معتبر یک سانس (همهٔ وضعیت‌ها به‌جز رد‌شده‌ها).
- * به‌جای متای شکنندهٔ _smv_booked از خود جدول ثبت‌نام‌ها محاسبه می‌شود تا با
- * حذف یا رد شدن یک ثبت‌نام، ظرفیت به‌درستی آزاد شود.
+ * تعداد ثبت‌نام‌های آنلاین (از خود سایت) یک سانس (همهٔ وضعیت‌ها به‌جز رد‌شده‌ها).
+ * از خود جدول ثبت‌نام‌ها محاسبه می‌شود تا با حذف یا رد شدن یک ثبت‌نام، ظرفیت آزاد شود.
  */
-function smv_showtime_booked_count($showtime_id) {
+function smv_showtime_online_booked_count($showtime_id) {
     global $wpdb;
     $showtime_id = absint($showtime_id);
     if (!$showtime_id) {
@@ -202,9 +201,35 @@ function smv_showtime_booked_count($showtime_id) {
     }
     $table = smv_table_name();
     $count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$table} WHERE showtime_id = %d AND status <> 'rejected'", $showtime_id));
-    // همگام‌سازی متای قدیمی برای سازگاری با نسخه‌های قبلی.
-    update_post_meta($showtime_id, '_smv_booked', (int) $count);
     return (int) $count;
+}
+
+/**
+ * تعداد ثبت‌نام دستی یک سانس؛ عددی که مدیر برای ثبت‌نام‌های خارج از سایت
+ * (حضوری، تلفنی، گیشه و...) دستی وارد می‌کند تا ظرفیت واقعی درست محاسبه شود.
+ */
+function smv_showtime_manual_booked_count($showtime_id) {
+    $showtime_id = absint($showtime_id);
+    if (!$showtime_id) {
+        return 0;
+    }
+    return absint(get_post_meta($showtime_id, '_smv_manual_booked', true));
+}
+
+/**
+ * مجموع رزروشدهٔ یک سانس = ثبت‌نام‌های سایت + ثبت‌نام‌های دستیِ مدیر.
+ * همهٔ محاسبه‌های ظرفیت باقی‌مانده و «تکمیل ظرفیت» بر اساس همین مجموع است،
+ * پس با وارد کردن عدد دستی می‌شود ظرفیت ثبت‌نامی هر سانس را دستی دستکاری کرد.
+ */
+function smv_showtime_booked_count($showtime_id) {
+    $showtime_id = absint($showtime_id);
+    if (!$showtime_id) {
+        return 0;
+    }
+    $total = smv_showtime_online_booked_count($showtime_id) + smv_showtime_manual_booked_count($showtime_id);
+    // همگام‌سازی متای قدیمی برای سازگاری با نسخه‌های قبلی.
+    update_post_meta($showtime_id, '_smv_booked', (int) $total);
+    return (int) $total;
 }
 
 function smv_theatre_seats_remaining($theatre_id) {

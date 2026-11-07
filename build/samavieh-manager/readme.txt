@@ -4,7 +4,7 @@ Tags: theatre, booking, registration, persian, rtl, elementor, zarinpal, pdf
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.8.0
+Stable tag: 1.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,9 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 پس از وارد کردن کد مرچنت در تنظیمات و فعال کردن روش «پرداخت آنلاین» برای اجرا، دکمهٔ پرداخت در دسترس است.
 
 == Changelog ==
+
+= 1.9.0 =
+* Per-showtime manual registration count (offline/phone bookings) editable in the theatre editor: it is added to online registrations, reduces the remaining seats, and can make a showtime full (“capacity completed”) or be reset to zero.
 
 = 1.8.0 =
 * Real official logo image files for Rubika, Eitaa and Bale (provided by the admin) used on the social cards instead of drawn marks.
