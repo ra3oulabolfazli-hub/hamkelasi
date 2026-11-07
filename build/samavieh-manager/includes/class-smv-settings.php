@@ -52,7 +52,8 @@ class SMV_Settings {
             'receipt_max_size' => 5,
             'success_message' => 'درخواست ثبت‌نام شما ثبت شد. تأیید نهایی پس از بررسی فیش واریزی انجام می‌شود.',
             'payment_instructions' => '',
-            'rules' => 'اطلاعات واردشده را صحیح اعلام می‌کنم و با بررسی فیش واریزی توسط مدیریت گروه موافقم.',
+            'terms_text' => "با توجه به هزینه‌ی برگزاری سوگواره و محدودیت ظرفیت، خواهشمندیم به عنوان یک دِین شرعی به ازای هر رزرو، حتماً در مراسم حضور داشته باشید.\nعدم حضور شما موجب محرومیت دیگران از حضور در سوگواره می‌شود.",
+            'rules' => "با توجه به هزینه‌ی برگزاری سوگواره و محدودیت ظرفیت، خواهشمندیم به عنوان یک دِین شرعی به ازای هر رزرو، حتماً در مراسم حضور داشته باشید.\nعدم حضور شما موجب محرومیت دیگران از حضور در سوگواره می‌شود.",
         );
     }
 
@@ -72,7 +73,7 @@ class SMV_Settings {
         foreach ($text as $key) {
             $output[$key] = isset($input[$key]) ? sanitize_text_field($input[$key]) : '';
         }
-        $areas = array('address', 'home_hero_text', 'home_about_title', 'home_about_text', 'footer_about', 'success_message', 'payment_instructions', 'rules');
+        $areas = array('address', 'home_hero_text', 'home_about_title', 'home_about_text', 'footer_about', 'success_message', 'payment_instructions', 'rules', 'terms_text');
         foreach ($areas as $key) {
             $output[$key] = isset($input[$key]) ? sanitize_textarea_field($input[$key]) : '';
         }
@@ -93,6 +94,8 @@ class SMV_Settings {
         $output['sms_custom_url'] = isset($input['sms_custom_url']) ? esc_url_raw($input['sms_custom_url']) : '';
         $output['sms_template'] = isset($input['sms_template']) ? sanitize_textarea_field($input['sms_template']) : '';
         $output['sms_admin_phone'] = isset($input['sms_admin_phone']) ? preg_replace('/[^0-9]/', '', SMV_Persian::english_digits($input['sms_admin_phone'])) : '';
+        // متن قوانین، همان متن رضایت‌نامهٔ قدیمی هم نگه داشته می‌شود تا سازگاری حفظ شود.
+        $output['rules'] = $output['terms_text'];
         $output['tracking_page_id'] = isset($input['tracking_page_id']) ? absint($input['tracking_page_id']) : 0;
         $output['theatres_page_id'] = isset($input['theatres_page_id']) ? absint($input['theatres_page_id']) : absint(smv_get_option('theatres_page_id'));
         $output['projects_page_id'] = isset($input['projects_page_id']) ? absint($input['projects_page_id']) : absint(smv_get_option('projects_page_id'));
@@ -220,7 +223,7 @@ class SMV_Settings {
                     <?php self::textarea('payment_instructions', 'راهنمای واریز (بالای فرم ثبت‌نام)', $options['payment_instructions'], 3); ?>
                     <p class="smv-settings-help">می‌توانید شماره کارت/حساب، نام صاحب حساب و توضیح لازم برای واریز را اینجا بنویسید. اگر خالی باشد، این بخش در سایت نمایش داده نمی‌شود.</p>
                     <?php self::textarea('success_message', 'پیام بعد از ثبت درخواست', $options['success_message'], 3); ?>
-                    <?php self::textarea('rules', 'متن رضایت‌نامهٔ کنار فرم', $options['rules'], 3); ?>
+                    <div class="smv-admin-field"><label for="smv-setting-terms_text"><strong>قوانین ثبت‌نام (نمایش بالای فرم + تیک پذیرش)</strong></label><textarea id="smv-setting-terms_text" rows="4" name="smv_settings[terms_text]"><?php echo esc_textarea(isset($options['terms_text']) ? $options['terms_text'] : ''); ?></textarea><small>این متن در بخش «قوانین ثبت‌نام» فرم نمایش داده می‌شود و کاربر باید تیک «قوانین را خواندم و قبول می‌کنم» را بزند؛ بدون این تیک، ثبت‌نام ارسال نمی‌شود.</small></div>
                 </section>
                 <?php submit_button('ذخیره تنظیمات', 'smv-primary-button', 'submit', false); ?>
             </form>

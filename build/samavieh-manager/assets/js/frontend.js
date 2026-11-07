@@ -55,6 +55,36 @@
     });
   });
 
+  // امتیازدهی ستاره‌ای متحرک در فرم نظرات
+  var starLabels = { 1: '۱ ستاره — خیلی ضعیف', 2: '۲ ستاره — ضعیف', 3: '۳ ستاره — متوسط', 4: '۴ ستاره — خوب', 5: '۵ ستاره — عالی' };
+  document.querySelectorAll('[data-smv-star-rating]').forEach(function (widget) {
+    var buttons = Array.prototype.slice.call(widget.querySelectorAll('.smv-star-btn'));
+    var input = widget.querySelector('[data-smv-rating-input]');
+    var form = widget.closest('form');
+    var text = form ? form.querySelector('[data-smv-rating-text]') : null;
+    function paint(value, mode) {
+      buttons.forEach(function (btn) {
+        var active = parseInt(btn.getAttribute('data-value'), 10) <= value;
+        btn.classList.toggle(mode === 'hover' ? 'is-hover' : 'is-filled', active);
+        if (mode !== 'hover') btn.setAttribute('aria-checked', active && parseInt(btn.getAttribute('data-value'), 10) === value ? 'true' : 'false');
+      });
+    }
+    buttons.forEach(function (btn) {
+      var value = parseInt(btn.getAttribute('data-value'), 10);
+      btn.addEventListener('click', function () {
+        if (input) input.value = value;
+        paint(value, 'fill');
+        if (text) text.textContent = starLabels[value] || '';
+      });
+      btn.addEventListener('mouseenter', function () { paint(value, 'hover'); });
+      btn.addEventListener('focus', function () { paint(value, 'hover'); });
+    });
+    widget.addEventListener('mouseleave', function () {
+      buttons.forEach(function (b) { b.classList.remove('is-hover'); });
+      paint(input && input.value ? parseInt(input.value, 10) : 0, 'fill');
+    });
+  });
+
   document.querySelectorAll('[data-smv-form]').forEach(function (form) {
     form.addEventListener('submit', function () {
       var button = form.querySelector('[data-smv-submit]');

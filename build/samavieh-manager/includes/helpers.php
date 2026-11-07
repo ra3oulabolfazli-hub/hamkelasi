@@ -283,7 +283,7 @@ function smv_get_theatre_meta($theatre_id, $key = '') {
 }
 
 function smv_get_showtimes_for_theatre($theatre_id) {
-    return get_posts(array(
+    $showtimes = get_posts(array(
         'post_type' => 'smv_showtime',
         'post_status' => array('publish'),
         'posts_per_page' => -1,
@@ -296,6 +296,147 @@ function smv_get_showtimes_for_theatre($theatre_id) {
         'meta_key' => '_smv_showtime_date',
         'order' => 'ASC',
     ));
+    return smv_sort_showtimes(is_array($showtimes) ? $showtimes : array());
+}
+
+/**
+ * مرتب‌سازی سانس‌ها بر اساس اولویت رزرو: اول تاریخ، بعد ساعت شروع، بعد شناسه
+ * (سانسی که زودتر برگزار می‌شود، زودتر پر می‌شود).
+ */
+function smv_sort_showtimes($showtimes) {
+    $showtimes = array_values(is_array($showtimes) ? $showtimes : array());
+    usort($showtimes, function ($a, $b) {
+        $a_id = isset($a->ID) ? (int) $a->ID : 0;
+        $b_id = isset($b->ID) ? (int) $b->ID : 0;
+        $a_date = (string) get_post_meta($a_id, '_smv_showtime_date', true);
+        $b_date = (string) get_post_meta($b_id, '_smv_showtime_date', true);
+        if ($a_date !== $b_date) {
+            return strcmp($a_date, $b_date);
+        }
+        $a_time = (string) get_post_meta($a_id, '_smv_showtime_time', true);
+        $b_time = (string) get_post_meta($b_id, '_smv_showtime_time', true);
+        if ($a_time !== $b_time) {
+            return strcmp($a_time, $b_time);
+        }
+        return $a_id <=> $b_id;
+    });
+    return $showtimes;
+}
+
+/** سانس‌های مرتب‌شدهٔ یک اجرا به ترتیب اولویت پر شدن */
+function smv_ordered_showtimes_for_theatre($theatre_id) {
+    return smv_get_showtimes_for_theatre($theatre_id);
+}
+
+/** شمارهٔ اولویت سانس (۱ = اولین سانس)؛ اگر سانس متعلق به اجرا نباشد ۰ */
+function smv_showtime_priority($showtime_id, $theatre_id = 0) {
+    if (!$theatre_id) {
+        $theatre_id = absint(get_post_meta($showtime_id, '_smv_theatre_id', true));
+    }
+    foreach (smv_ordered_showtimes_for_theatre($theatre_id) as $index => $showtime) {
+        if ((int) $showtime->ID === (int) $showtime_id) {
+            return $index + 1;
+        }
+    }
+    return 0;
+}
+
+/**
+ * شناسهٔ تنها سانسِ «فعال» برای رزرو: اولین سانسی (با اولویت برگزاری) که هنوز ظرفیت دارد.
+ * سانس‌های قبل از آن «تکمیل ظرفیت» و سانس‌های بعد از آن «در انتظار» هستند.
+ */
+function smv_active_showtime_id($theatre_id) {
+    foreach (smv_ordered_showtimes_for_theatre($theatre_id) as $showtime) {
+        $remaining = smv_showtime_seats_remaining($showtime->ID);
+        if (null === $remaining || $remaining > 0) {
+            return (int) $showtime->ID;
+        }
+    }
+    return 0;
+}
+
+/**
+ * وضعیت ترتیبی یک سانس: full | active | waiting
+ * full = تکمیل ظرفیت، active = تنها سانس قابل رزرو، waiting = پس از تکمیل سانس قبلی فعال می‌شود.
+ */
+function smv_showtime_state($showtime_id, $theatre_id = 0) {
+    $showtime_id = absint($showtime_id);
+    if (!$theatre_id) {
+        $theatre_id = absint(get_post_meta($showtime_id, '_smv_theatre_id', true));
+    }
+    $remaining = smv_showtime_seats_remaining($showtime_id);
+    if (null !== $remaining && $remaining <= 0) {
+        return 'full';
+    }
+    $active_id = smv_active_showtime_id($theatre_id);
+    return ($active_id && $active_id === $showtime_id) ? 'active' : 'waiting';
+}
+
+/** متن قوانین ثبت‌نام (قابل ویرایش از تنظیمات؛ پیش‌فرض، متن سوگواره) */
+function smv_registration_terms_text() {
+    $text = trim((string) smv_get_option('terms_text', ''));
+    if ('' !== $text) {
+        return $text;
+    }
+    return "با توجه به هزینه‌ی برگزاری سوگواره و محدودیت ظرفیت، خواهشمندیم به عنوان یک دِین شرعی به ازای هر رزرو، حتماً در مراسم حضور داشته باشید.\nعدم حضور شما موجب محرومیت دیگران از حضور در سوگواره می‌شود.";
+}
+
+/**
+ * فهرست ویدیوهای یک اجرا برای نمایش حتمی در صفحهٔ اجرا:
+ * ویدیوی اصلی (فایل آپلودشده یا لینک) + لینک‌های اضافی (هر خط یک لینک).
+ * هر آیتم: ['url' => ..., 'type' => 'file'|'embed']
+ */
+function smv_theatre_videos($theatre_id) {
+    $theatre_id = absint($theatre_id);
+    $urls = array();
+    $primary = trim((string) get_post_meta($theatre_id, '_smv_video_url', true));
+    if ('' === $primary) {
+        $video_id = absint(get_post_meta($theatre_id, '_smv_video_id', true));
+        $primary = $video_id ? (string) wp_get_attachment_url($video_id) : '';
+    }
+    if ($primary) {
+        $urls[] = $primary;
+    }
+    $extra = get_post_meta($theatre_id, '_smv_videos', true);
+    $extra_items = maybe_unserialize($extra);
+    if (is_string($extra_items)) {
+        $extra_items = preg_split('/\r\n|\r|\n/', $extra_items);
+    }
+    if (is_array($extra_items)) {
+        foreach ($extra_items as $item) {
+            $item = trim((string) $item);
+            if ($item) {
+                $urls[] = $item;
+            }
+        }
+    }
+    $videos = array();
+    foreach (array_unique($urls) as $url) {
+        $path = (string) parse_url($url, PHP_URL_PATH);
+        $is_file = (bool) preg_match('/\.(mp4|webm|mov|m4v)$/i', $path);
+        $videos[] = array('url' => $url, 'type' => $is_file ? 'file' : 'embed');
+    }
+    return $videos;
+}
+
+/** خروجی HTML پخش ویدیو (فایل مستقیم با تگ video؛ لینک خارجی با embed/اوامبد) */
+function smv_video_embed_html($video) {
+    $url = isset($video['url']) ? (string) $video['url'] : '';
+    if (!$url) {
+        return '';
+    }
+    if (isset($video['type']) && 'file' === $video['type']) {
+        return '<video class="smv-video-player" controls preload="metadata" playsinline src="' . esc_url($url) . '"></video>';
+    }
+    $oembed = function_exists('wp_oembed_get') ? wp_oembed_get($url) : false;
+    if ($oembed) {
+        return '<div class="smv-video-frame">' . $oembed . '</div>';
+    }
+    $shortcode = do_shortcode('[embed width="800" height="450"]' . esc_url($url) . '[/embed]');
+    if ($shortcode && false === strpos($shortcode, '[embed')) {
+        return '<div class="smv-video-frame">' . $shortcode . '</div>';
+    }
+    return '<a class="smv-video-link" href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer"><span class="smv-video-play">▶</span> تماشای ویدیو</a>';
 }
 
 /**

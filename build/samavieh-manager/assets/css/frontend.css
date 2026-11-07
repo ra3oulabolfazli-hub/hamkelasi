@@ -462,3 +462,54 @@ a.smv-contact-card:hover { border-color: #c9a45f; box-shadow: var(--smv-shadow);
   .smv-social-cta { width:100%; justify-content:flex-start; }
   .smv-social-links { gap:6px; }
 }
+
+/* ===== v1.5.0: پوستر وسط‌چین، مدیا، قوانین، سانس ترتیبی، نظرات و ستاره متحرک ===== */
+.smv-poster-center{display:flex;justify-content:center;text-align:center;margin:6px auto 24px}
+.smv-poster-figure{margin:0 auto;text-align:center}
+.smv-theatre-poster{display:block;margin:0 auto;max-width:min(420px,92vw);width:auto;height:auto;border-radius:18px;box-shadow:0 20px 55px rgba(13,51,46,.18);border:1px solid #e9e1d3}
+.smv-poster-figure figcaption{margin-top:10px;color:var(--smv-muted);font-size:12px;text-align:center}
+.smv-media-section{margin:0 0 24px;padding:20px;border:1px solid var(--smv-line);border-radius:18px;background:#fff}
+.smv-media-section h3{margin:0 0 14px;color:var(--smv-primary);font-size:17px;text-align:right}
+.smv-videos-list{display:grid;gap:16px;margin-bottom:16px}
+.smv-video-item{border-radius:14px;overflow:hidden;background:#0b2421}
+.smv-video-player,.smv-video-frame iframe,.smv-video-frame video{display:block;width:100%;aspect-ratio:16/9;height:auto;border:0}
+.smv-video-link{display:flex;align-items:center;gap:10px;padding:18px;color:#fff;text-decoration:none}
+.smv-video-play{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;background:var(--smv-gold);color:#123f3a}
+.smv-theatre-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.smv-gallery-img{width:100%;height:150px;object-fit:cover;border-radius:12px;display:block}
+.smv-media-empty{border:1px dashed #d9d5cb;border-radius:12px;background:var(--smv-cream);color:var(--smv-muted);padding:22px;text-align:center;font-size:12px}
+.smv-showtime-order-note{margin:0 0 12px;padding:10px 14px;border-radius:10px;background:#fff8e9;border:1px solid #ecd9ac;color:#775a2e;font-size:12px}
+.smv-showtime-priority{font-weight:900;color:#9a7339}
+.smv-showtime-state{border-radius:999px;padding:2px 9px;font-size:10px;font-weight:800;white-space:nowrap}
+.smv-state-active{color:#176245;background:#e4f4eb}.smv-state-full{color:#944545;background:#fde9e7}.smv-state-waiting{color:#775a2e;background:#fff2d9}
+.smv-showtime-card.is-active{border-color:#b8d8c6;box-shadow:0 10px 30px rgba(34,116,91,.12)}
+.smv-showtime-card.is-waiting{opacity:.78}.smv-showtime-card.is-full{opacity:.72}
+.smv-button-disabled,.smv-button[disabled]{color:#8a918c!important;background:#eef0ec!important;border-color:#e1e4df!important;cursor:not-allowed;box-shadow:none}
+.smv-terms-box{margin:22px 0 6px;padding:18px;border:1px solid #e5d8bc;border-radius:14px;background:#fffaf0}
+.smv-terms-title{margin:0 0 10px;color:var(--smv-primary);font-size:15px}
+.smv-terms-text{max-height:180px;overflow:auto;padding:12px 14px;border-radius:10px;background:#fff;border:1px solid #eee4cd;color:#5d5140;font-size:13px;line-height:2}
+.smv-terms-consent{margin:14px 0 0;font-size:13px;color:var(--smv-primary-dark);font-weight:700}
+.smv-terms-consent b{color:#b04b4b}
+.smv-reviews-summary{display:flex;gap:18px;align-items:center;padding:18px;border-radius:16px;background:linear-gradient(135deg,#123f3a,#1c5b51);color:#fff;margin-bottom:16px}
+.smv-reviews-score{text-align:center;min-width:130px}
+.smv-reviews-score strong{display:block;font-size:34px;line-height:1.2;color:#fff}
+.smv-reviews-score small{display:block;color:#d6e0dc;font-size:11px;margin-top:4px}
+.smv-reviews-summary p{margin:0;color:#d6e0dc;font-size:13px;line-height:2}
+.smv-reviews-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.smv-review-card{border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(13,51,46,.05)}
+.smv-review-avatar{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(135deg,#ddbd7b,#c9a45f);color:#123f3a;font-weight:900}
+.smv-review-meta{flex:1;display:flex;flex-direction:column}
+.smv-review-date{margin:0;font-size:10px}
+.smv-reviews-empty{text-align:center;padding:30px 20px;border:1px dashed #d9d5cb;border-radius:16px;background:var(--smv-cream)}
+.smv-reviews-empty-icon{font-size:30px}.smv-reviews-empty h4{margin:8px 0 4px;color:var(--smv-primary)}.smv-reviews-empty p{margin:0;color:var(--smv-muted);font-size:12px}
+.smv-review-form{border:1px solid #e8dfcf;border-radius:16px;background:#fff;box-shadow:0 8px 24px rgba(13,51,46,.05)}
+@keyframes smvStarPop{0%{transform:scale(.6) rotate(-18deg);opacity:.4}60%{transform:scale(1.35) rotate(8deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.smv-stars-animated .smv-star.filled{display:inline-block;animation:smvStarPop .55s both;animation-delay:var(--smv-star-delay,0ms)}
+.smv-star-rating{display:flex;gap:4px;direction:ltr;justify-content:flex-end}
+.smv-star-btn{appearance:none;border:0;background:transparent;cursor:pointer;font-size:34px;line-height:1;color:#ddd6c7;padding:2px;transition:transform .15s,color .15s}
+.smv-star-btn.is-filled,.smv-star-btn.is-hover{color:var(--smv-gold)}
+.smv-star-btn.is-filled{animation:smvStarPop .35s both}
+.smv-star-btn:hover{transform:scale(1.2) rotate(6deg)}
+.smv-star-rating-text{display:block;margin-top:6px}
+@media (max-width:560px){.smv-reviews-summary{flex-direction:column;text-align:center}.smv-star-rating{justify-content:center}.smv-theatre-gallery{grid-template-columns:repeat(2,1fr)}}
+@media (prefers-reduced-motion:reduce){.smv-stars-animated .smv-star.filled,.smv-star-btn.is-filled{animation:none}}

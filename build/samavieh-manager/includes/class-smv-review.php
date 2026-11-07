@@ -33,26 +33,37 @@ class SMV_Review {
         }
 
         $reviews = smv_get_reviews_for_theatre($theatre_id, !empty($atts['approved_only']), absint($atts['count']));
-        $approved_count = count(smv_get_reviews_for_theatre($theatre_id, true, 99));
+        $all_approved = smv_get_reviews_for_theatre($theatre_id, true, 99);
+        $approved_count = count($all_approved);
+        $average = 0;
+        if ($approved_count) {
+            $sum = 0;
+            foreach ($all_approved as $item) { $sum += absint($item->rating); }
+            $average = $sum / $approved_count;
+        }
 
         ob_start();
         ?>
         <div class="smv-reviews">
+            <div class="smv-reviews-summary">
+                <div class="smv-reviews-score"><strong><?php echo esc_html($approved_count ? SMV_Persian::digits(number_format($average, 1)) : '—'); ?></strong><span class="smv-review-rating smv-stars-animated"><?php echo self::stars((int) round($average)); ?></span><small><?php echo $approved_count ? esc_html(SMV_Persian::digits($approved_count)) . ' نظر تأییدشده' : 'هنوز نظری ثبت نشده است'; ?></small></div>
+                <p>تجربهٔ تماشای این اجرا را با دیگران به اشتراک بگذارید؛ نظر شما پس از تأیید مدیریت همین‌جا نمایش داده می‌شود.</p>
+            </div>
             <?php if ($reviews) : ?>
                 <div class="smv-reviews-grid">
-                    <?php foreach ($reviews as $review) : ?>
+                    <?php foreach ($reviews as $review) : $initial = function_exists('mb_substr') ? mb_substr($review->author, 0, 1, 'UTF-8') : substr($review->author, 0, 1); ?>
                         <article class="smv-review-card">
                             <div class="smv-review-header">
-                                <span class="smv-review-author"><?php echo esc_html($review->author); ?></span>
-                                <span class="smv-review-rating"><?php echo self::stars(absint($review->rating)); ?></span>
+                                <span class="smv-review-avatar" aria-hidden="true"><?php echo esc_html($initial); ?></span>
+                                <span class="smv-review-meta"><span class="smv-review-author"><?php echo esc_html($review->author); ?></span><span class="smv-review-date"><?php echo esc_html(SMV_Persian::date($review->created_at)); ?></span></span>
+                                <span class="smv-review-rating smv-stars-animated"><?php echo self::stars(absint($review->rating)); ?></span>
                             </div>
                             <div class="smv-review-body"><?php echo nl2br(esc_html($review->comment)); ?></div>
-                            <span class="smv-review-date"><?php echo esc_html(SMV_Persian::date($review->created_at)); ?></span>
                         </article>
                     <?php endforeach; ?>
                 </div>
             <?php else : ?>
-                <div class="smv-empty"><p>هنوز نظری برای این اجرا ثبت نشده است.</p></div>
+                <div class="smv-reviews-empty"><span class="smv-reviews-empty-icon">💬</span><h4>اولین نفر باشید که نظر می‌دهد</h4><p>هنوز نظری برای این اجرا ثبت نشده است؛ تجربهٔ خودتان را بنویسید.</p></div>
             <?php endif; ?>
 
             <?php if (!empty($atts['form'])) : ?>
@@ -88,14 +99,14 @@ class SMV_Review {
                     <input type="text" id="<?php echo esc_attr($form_id); ?>-author" name="author" required maxlength="100" autocomplete="name" />
                 </div>
                 <div class="smv-field">
-                    <label for="<?php echo esc_attr($form_id); ?>-rating">امتیاز <b>*</b></label>
-                    <select id="<?php echo esc_attr($form_id); ?>-rating" name="rating" required>
-                        <option value="5">۵ ستاره — عالی</option>
-                        <option value="4">۴ ستاره — خوب</option>
-                        <option value="3">۳ ستاره — متوسط</option>
-                        <option value="2">۲ ستاره — ضعیف</option>
-                        <option value="1">۱ ستاره — خیلی ضعیف</option>
-                    </select>
+                    <label id="<?php echo esc_attr($form_id); ?>-rating-label">امتیاز شما <b>*</b></label>
+                    <div class="smv-star-rating" data-smv-star-rating role="radiogroup" aria-labelledby="<?php echo esc_attr($form_id); ?>-rating-label">
+                        <?php for ($i = 1; $i <= 5; $i++) : ?>
+                            <button type="button" class="smv-star-btn" data-value="<?php echo esc_attr($i); ?>" role="radio" aria-checked="false" aria-label="<?php echo esc_attr(SMV_Persian::digits($i)); ?> ستاره">★</button>
+                        <?php endfor; ?>
+                        <input type="hidden" id="<?php echo esc_attr($form_id); ?>-rating" name="rating" value="" data-smv-rating-input />
+                    </div>
+                    <small class="smv-star-rating-text" data-smv-rating-text>برای امتیاز دادن، روی ستاره‌ها بزنید.</small>
                 </div>
                 <div class="smv-field smv-field-full">
                     <label for="<?php echo esc_attr($form_id); ?>-comment">متن نظر <b>*</b></label>
@@ -130,7 +141,7 @@ class SMV_Review {
                         message.style.display = 'block';
                         message.className = 'smv-form-message ' + (result.success ? 'is-success' : 'is-error');
                         message.textContent = (result.data && result.data.message) ? result.data.message : 'خطا در ارسال نظر.';
-                        if (result.success) { form.reset(); }
+                        if (result.success) { form.reset(); form.querySelectorAll('.smv-star-btn').forEach(function(b){ b.classList.remove('is-filled','is-hover'); b.setAttribute('aria-checked','false'); }); var rt = form.querySelector('[data-smv-rating-text]'); if (rt) { rt.textContent = 'برای امتیاز دادن، روی ستاره‌ها بزنید.'; } }
                         if (button) { button.disabled = false; }
                     })
                     .catch(function(){
@@ -152,7 +163,7 @@ class SMV_Review {
         $rating = max(0, min(5, absint($rating)));
         $html = '';
         for ($i = 1; $i <= 5; $i++) {
-            $html .= '<span class="smv-star' . ($i <= $rating ? ' filled' : '') . '">★</span>';
+            $html .= '<span class="smv-star' . ($i <= $rating ? ' filled' : '') . '" style="--smv-star-delay:' . esc_attr(($i - 1) * 90) . 'ms">★</span>';
         }
         return $html;
     }

@@ -270,6 +270,7 @@ class SMV_Shortcodes {
             $gallery_ids = array();
         }
         $video_url = isset($meta['_smv_video_url'][0]) ? $meta['_smv_video_url'][0] : '';
+        $videos = function_exists('smv_theatre_videos') ? smv_theatre_videos($id) : array();
 
         $open = smv_theatre_registration_open($id);
         $showtimes = smv_get_showtimes_for_theatre($id);
@@ -280,25 +281,43 @@ class SMV_Shortcodes {
         <section class="smv-theatre-details smv-panel">
             <div class="smv-panel-heading"><div><span class="smv-kicker">پیش از ثبت‌نام</span><h2>اطلاعات اجرا</h2></div><span class="smv-status-pill <?php echo $open ? 'is-open' : 'is-closed'; ?>"><i></i><?php echo $open ? 'ثبت‌نام باز' : 'ثبت‌نام بسته'; ?></span></div>
 
-            <!-- Poster & Gallery -->
-            <div class="smv-theatre-media">
+            <!-- Poster (وسط‌چین) -->
+            <div class="smv-theatre-media smv-poster-center">
                 <?php if (has_post_thumbnail($id)) : ?>
-                    <img src="<?php echo esc_url(get_the_post_thumbnail_url($id, 'large')); ?>" alt="<?php echo esc_attr(get_the_title($id)); ?>" class="smv-theatre-poster" />
+                    <figure class="smv-poster-figure"><img src="<?php echo esc_url(get_the_post_thumbnail_url($id, 'large')); ?>" alt="<?php echo esc_attr(get_the_title($id)); ?>" class="smv-theatre-poster" /><figcaption><?php echo esc_html(get_the_title($id)); ?></figcaption></figure>
+                <?php else : ?>
+                    <figure class="smv-poster-figure"><img src="<?php echo esc_url(SMV_URL . 'assets/images/theatre-placeholder.svg'); ?>" alt="<?php echo esc_attr(get_the_title($id)); ?>" class="smv-theatre-poster" /><figcaption><?php echo esc_html(get_the_title($id)); ?></figcaption></figure>
+                <?php endif; ?>
+            </div>
+
+            <!-- مدیا و ویدیوها: همیشه نمایش داده می‌شود -->
+            <section class="smv-media-section" id="smv-media">
+                <h3>🎬 مدیا و ویدیوهای اجرا</h3>
+                <?php if (!empty($videos)) : ?>
+                    <div class="smv-videos-list">
+                        <?php foreach ($videos as $video) : ?>
+                            <div class="smv-video-item"><?php echo smv_video_embed_html($video); ?></div>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endif; ?>
                 <?php if (!empty($gallery_ids)) : ?>
                     <div class="smv-theatre-gallery">
                         <?php
                         foreach ($gallery_ids as $gid) :
                             $img = wp_get_attachment_image_src(absint($gid), 'medium');
+                            $full = wp_get_attachment_image_src(absint($gid), 'large');
                             if (!$img || empty($img[0])) {
                                 continue;
                             }
                             ?>
-                            <img src="<?php echo esc_url($img[0]); ?>" alt="<?php echo esc_attr(get_the_title($id)); ?>" class="smv-gallery-img" loading="lazy" />
+                            <a class="smv-gallery-link" href="<?php echo esc_url($full && !empty($full[0]) ? $full[0] : $img[0]); ?>" target="_blank" rel="noopener"><img src="<?php echo esc_url($img[0]); ?>" alt="<?php echo esc_attr(get_the_title($id)); ?>" class="smv-gallery-img" loading="lazy" /></a>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
-            </div>
+                <?php if (empty($videos) && empty($gallery_ids)) : ?>
+                    <div class="smv-media-empty">به‌زودی تریلر، تیزر و تصاویر این اجرا در این بخش قرار می‌گیرد.</div>
+                <?php endif; ?>
+            </section>
 
             <div class="smv-details-grid">
                 <?php foreach (array(
@@ -347,15 +366,6 @@ class SMV_Shortcodes {
                     <div class="smv-closed-notice"><?php echo smv_icon('ticket'); ?> ثبت‌نام برای این اجرا در حال حاضر غیرفعال است.</div>
                 <?php endif; ?>
 
-                <?php if ($video_url) : ?>
-                    <div class="smv-video-section">
-                        <h3>ویدیو تریلر / موشن گرافیک</h3>
-                        <div class="smv-video-embed">
-                            <?php echo do_shortcode('[embed]' . esc_url($video_url) . '[/embed]'); ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
                 <div class="smv-reviews-section">
                     <h3>نظرات مخاطبان</h3>
                     <?php echo do_shortcode('[samavieh_reviews theatre_id="' . esc_attr($id) . '" count="2"]'); ?>
@@ -392,16 +402,20 @@ class SMV_Shortcodes {
 
         $rendered = true;
 
-        // سانس‌های دارای ظرفیت خالی
+        // سانس‌ها به ترتیب اولویت: فقط اولین سانس دارای ظرفیت «فعال» و قابل انتخاب است؛
+        // قبلی‌ها «تکمیل ظرفیت» و بعدی‌ها «در انتظار» نمایش داده می‌شوند (غیرقابل انتخاب).
+        $active_showtime_id = function_exists('smv_active_showtime_id') ? smv_active_showtime_id($theatre_id) : 0;
         $showtimes = array();
-        foreach (smv_get_showtimes_for_theatre($theatre_id) as $showtime) {
+        $priority = 0;
+        foreach (smv_ordered_showtimes_for_theatre($theatre_id) as $showtime) {
             $sid = $showtime->ID;
+            $priority++;
             $remaining = smv_showtime_seats_remaining($sid);
-            if (null !== $remaining && $remaining <= 0) {
-                continue;
-            }
+            $state = (null !== $remaining && $remaining <= 0) ? 'full' : (($active_showtime_id && (int) $sid === (int) $active_showtime_id) ? 'active' : 'waiting');
             $showtimes[] = array(
                 'id' => $sid,
+                'priority' => $priority,
+                'state' => $state,
                 'date' => get_post_meta($sid, '_smv_showtime_date', true),
                 'time' => get_post_meta($sid, '_smv_showtime_time', true),
                 'time_end' => get_post_meta($sid, '_smv_showtime_time_end', true),
@@ -460,11 +474,15 @@ class SMV_Shortcodes {
                             <div class="smv-field smv-field-full">
                                 <label for="smv-showtime-<?php echo esc_attr($theatre_id); ?>">انتخاب سانس <b>*</b></label>
                                 <select name="showtime_id" id="smv-showtime-<?php echo esc_attr($theatre_id); ?>" required>
-                                    <option value="">-- سانس را انتخاب کنید --</option>
+                                    <?php if (!$active_showtime_id) : ?><option value="">— همهٔ سانس‌ها تکمیل ظرفیت هستند —</option><?php endif; ?>
                                     <?php foreach ($showtimes as $st) : ?>
-                                        <option value="<?php echo esc_attr($st['id']); ?>" data-price="<?php echo esc_attr($st['price']); ?>" data-remaining="<?php echo esc_attr(null === $st['remaining'] ? -1 : $st['remaining']); ?>">
-                                            <?php echo esc_html(SMV_Persian::date($st['date'])); ?><?php echo ($st['time'] || $st['time_end']) ? ' — ' . esc_html(SMV_Persian::time_range($st['time'], $st['time_end'])) : ''; ?>
-                                            <?php if (null === $st['remaining']) : ?>
+                                        <option value="<?php echo esc_attr($st['id']); ?>" data-price="<?php echo esc_attr($st['price']); ?>" data-state="<?php echo esc_attr($st['state']); ?>" data-remaining="<?php echo esc_attr(null === $st['remaining'] ? -1 : $st['remaining']); ?>" <?php echo 'active' === $st['state'] ? 'selected' : 'disabled'; ?>>
+                                            سانس <?php echo esc_html(SMV_Persian::digits($st['priority'])); ?> — <?php echo esc_html(SMV_Persian::date($st['date'])); ?><?php echo ($st['time'] || $st['time_end']) ? ' — ' . esc_html(SMV_Persian::time_range($st['time'], $st['time_end'])) : ''; ?>
+                                            <?php if ('full' === $st['state']) : ?>
+                                                ( تکمیل ظرفیت )
+                                            <?php elseif ('waiting' === $st['state']) : ?>
+                                                ( در انتظار تکمیل سانس قبلی )
+                                            <?php elseif (null === $st['remaining']) : ?>
                                                 ( ظرفیت آزاد )
                                             <?php else : ?>
                                                 ( <?php echo esc_html(SMV_Persian::digits($st['remaining'])); ?> از <?php echo esc_html(SMV_Persian::digits($st['capacity'])); ?> صندلی خالی )
@@ -472,7 +490,7 @@ class SMV_Shortcodes {
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <small>سانس‌های دارای ظرفیت خالی نمایش داده می‌شوند.</small>
+                                <small>سانس‌ها به ترتیب پر می‌شوند: ابتدا سانس اول فعال است و پس از تکمیل ظرفیت آن، سانس بعدی به‌صورت خودکار فعال می‌شود. سانس‌های «تکمیل ظرفیت» و «در انتظار» قابل انتخاب نیستند.</small>
                             </div>
                         <?php endif; ?>
 
@@ -519,7 +537,11 @@ class SMV_Shortcodes {
                         </div>
                     </div>
 
-                    <label class="smv-consent"><input type="checkbox" name="smv_consent" value="1" required /><span><?php echo esc_html(smv_get_option('rules')); ?></span></label>
+                    <div class="smv-terms-box">
+                        <h3 class="smv-terms-title">📜 قوانین ثبت‌نام</h3>
+                        <div class="smv-terms-text"><?php echo nl2br(esc_html(smv_registration_terms_text())); ?></div>
+                        <label class="smv-consent smv-terms-consent"><input type="checkbox" name="smv_terms_accepted" value="1" required /><span>قوانین را خواندم و قبول می‌کنم <b>*</b></span></label>
+                    </div>
 
                     <div class="smv-submit-row"><button type="submit" class="smv-button smv-button-primary" data-smv-submit>ارسال ثبت‌نام <?php echo smv_icon('arrow'); ?></button><span><?php echo smv_icon('check'); ?>اطلاعات شما فقط برای بررسی ثبت‌نام استفاده می‌شود.</span></div>
                 </form>

@@ -43,11 +43,22 @@ class SMV_Booking {
         $query = new WP_Query($args);
         $columns = min(4, max(1, absint($atts['columns'])));
         $registration_target = $theatre_id ? get_permalink($theatre_id) : '';
+        $ordered_posts = array();
+        if (isset($query->posts) && is_array($query->posts) && $query->posts) {
+            $ordered_posts = smv_sort_showtimes($query->posts);
+        } elseif ($theatre_id) {
+            $ordered_posts = smv_ordered_showtimes_for_theatre($theatre_id);
+        }
+        $active_id = $theatre_id ? smv_active_showtime_id($theatre_id) : 0;
         ob_start();
-        if ($query->have_posts()) :
+        if ($ordered_posts) :
+            echo '<p class="smv-showtime-order-note">سانس‌ها به ترتیب پر می‌شوند؛ ابتدا سانس اول، و پس از تکمیل ظرفیت آن، سانس بعدی فعال می‌شود.</p>';
             echo '<div class="smv-showtime-grid smv-columns-' . esc_attr($columns) . '">';
-            while ($query->have_posts()) : $query->the_post();
-                $id = get_the_ID();
+            $priority = 0;
+            foreach ($ordered_posts as $showtime_post) :
+                $priority++;
+                $id = (int) $showtime_post->ID;
+                $GLOBALS['__current_id'] = $id;
                 $date = get_post_meta($id, '_smv_showtime_date', true);
                 $time = get_post_meta($id, '_smv_showtime_time', true);
                 $time_end = get_post_meta($id, '_smv_showtime_time_end', true);
@@ -58,15 +69,18 @@ class SMV_Booking {
                 $booked = smv_showtime_booked_count($id);
                 $percent = ($capacity > 0) ? min(100, round(($booked / $capacity) * 100)) : 0;
                 $is_full = (null !== $remaining && $remaining <= 0);
+                $state = $is_full ? 'full' : (($active_id && $active_id === $id) || !$theatre_id ? 'active' : 'waiting');
+                $state_label = 'full' === $state ? 'تکمیل ظرفیت' : ('active' === $state ? 'در حال ثبت‌نام' : 'در انتظار تکمیل سانس قبلی');
                 ?>
-                <article class="smv-showtime-card<?php echo $is_full ? ' is-full' : ''; ?>">
+                <article class="smv-showtime-card<?php echo $is_full ? ' is-full' : ''; ?> is-<?php echo esc_attr($state); ?>" data-smv-showtime-state="<?php echo esc_attr($state); ?>">
                     <div class="smv-showtime-header">
+                        <span class="smv-showtime-priority">سانس <?php echo esc_html(SMV_Persian::digits($priority)); ?></span>
                         <span class="smv-showtime-date"><?php echo esc_html(SMV_Persian::date($date)); ?></span>
                         <span class="smv-showtime-time"><?php echo esc_html(SMV_Persian::time_range($time, $time_end)); ?></span>
-                        <?php if ($is_full) : ?><span class="smv-showtime-full">تکمیل</span><?php endif; ?>
+                        <span class="smv-showtime-state smv-state-<?php echo esc_attr($state); ?>"><?php echo esc_html($state_label); ?></span>
                     </div>
                     <div class="smv-showtime-body">
-                        <h4><?php the_title(); ?></h4>
+                        <h4><?php echo esc_html(get_the_title($id)); ?></h4>
                         <?php if ($venue) : ?><p class="smv-showtime-venue"><?php echo esc_html($venue); ?></p><?php endif; ?>
                         <div class="smv-showtime-capacity">
                             <?php if (null === $remaining) : ?>
@@ -81,14 +95,16 @@ class SMV_Booking {
                     </div>
                     <div class="smv-showtime-footer">
                         <?php if ($is_full) : ?>
-                            <button type="button" class="smv-button smv-button-ghost" disabled>ظرفیت تکمیل است</button>
+                            <button type="button" class="smv-button smv-button-disabled" disabled>تکمیل ظرفیت</button>
+                        <?php elseif ('waiting' === $state) : ?>
+                            <button type="button" class="smv-button smv-button-disabled" disabled>🔒 پس از تکمیل سانس قبلی فعال می‌شود</button>
                         <?php elseif ($registration_target) : ?>
                             <a href="<?php echo esc_url($registration_target . '#smv-registration'); ?>" class="smv-button smv-button-primary">ثبت‌نام در این سانس</a>
                         <?php endif; ?>
                     </div>
                 </article>
                 <?php
-            endwhile;
+            endforeach;
             echo '</div>';
         else :
             echo '<div class="smv-empty">' . smv_icon('calendar') . '<h3>سانسی برای این اجرا برنامه‌ریزی نشده است</h3><p>به‌زودی سانس‌های جدید اضافه می‌شود.</p></div>';

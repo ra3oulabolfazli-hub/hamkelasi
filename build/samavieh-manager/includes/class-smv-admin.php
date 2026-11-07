@@ -270,7 +270,7 @@ class SMV_Admin {
                 <a class="smv-stat-card is-pending" href="<?php echo esc_url(admin_url('admin.php?page=smv-registrations&status=pending')); ?>"><span>در انتظار بررسی</span><strong><?php echo esc_html(SMV_Persian::digits(self::count_status('pending'))); ?></strong><small>فیش و ثبت‌نام جدید</small></a>
                 <a class="smv-stat-card is-approved" href="<?php echo esc_url(admin_url('admin.php?page=smv-registrations&status=approved')); ?>"><span>ثبت‌نام تأییدشده</span><strong><?php echo esc_html(SMV_Persian::digits(self::count_status('approved'))); ?></strong><small>پس از بررسی فیش</small></a>
                 <a class="smv-stat-card" href="<?php echo esc_url(admin_url('admin.php?page=smv-registrations')); ?>"><span>همهٔ ثبت‌نام‌ها</span><strong><?php echo esc_html(SMV_Persian::digits(self::count_status())); ?></strong><small>جست‌وجو و مدیریت</small></a>
-                <a class="smv-stat-card" href="<?php echo esc_url(admin_url('edit.php?post_type=smv_theatre')); ?>"><span>تئاترهای منتشرشده</span><strong><?php echo esc_html(SMV_Persian::digits((int) wp_count_posts('smv_theatre')->publish)); ?></strong><small>مدیریت اطلاعات اجرا</small></a>
+                <a class="smv-stat-card" href="<?php echo esc_url(admin_url('admin.php?page=smv-theatres')); ?>"><span>تئاترهای منتشرشده</span><strong><?php echo esc_html(SMV_Persian::digits((int) wp_count_posts('smv_theatre')->publish)); ?></strong><small>همان فهرست بخش «تئاترها» — مدیریت اطلاعات اجرا</small></a>
             </div>
 
             <section class="smv-admin-card">
@@ -690,6 +690,13 @@ class SMV_Admin {
                                 </div>
                                 <small>فایل ویدیو را آپلود کنید یا لینک آپارات/یوتیوب وارد کنید.</small>
                             </div>
+
+                            <div class="smv-admin-field full">
+                                <label for="smv-extra-videos"><strong>ویدیوهای بیشتر (اختیاری)</strong></label>
+                                <?php $extra_videos = isset($meta['_smv_videos'][0]) ? maybe_unserialize($meta['_smv_videos'][0]) : array(); $extra_videos_text = is_array($extra_videos) ? implode("\n", $extra_videos) : (string) $extra_videos; ?>
+                                <textarea id="smv-extra-videos" name="extra_videos" rows="3" dir="ltr" placeholder="https://www.aparat.com/v/...&#10;https://example.com/teaser.mp4"><?php echo esc_textarea($extra_videos_text); ?></textarea>
+                                <small>هر لینک ویدیو (آپارات، یوتیوب یا فایل MP4) را در یک خط بنویسید. همهٔ ویدیوها و عکس‌های گالری در بخش «مدیا و ویدیوهای اجرا» در صفحهٔ تئاتر — زیر پوستر — حتماً نمایش داده می‌شوند.</small>
+                            </div>
                         </div>
                     </div>
 
@@ -698,7 +705,7 @@ class SMV_Admin {
                         <div class="smv-showtime-toolbar">
                             <div class="smv-showtime-toolbar-text">
                                 <h3><span class="dashicons dashicons-calendar-alt"></span> سانس‌ها و ظرفیت</h3>
-                                <p>برای هر اجرا می‌توانید چند سانس با تاریخ، ساعت، ظرفیت و قیمت جداگانه تعریف کنید. تغییرات با دکمهٔ «<?php echo esc_html($button_text); ?>» ذخیره می‌شود.</p>
+                                <p>برای هر اجرا می‌توانید چند سانس با تاریخ، ساعت، ظرفیت و قیمت جداگانه تعریف کنید. تغییرات با دکمهٔ «<?php echo esc_html($button_text); ?>» ذخیره می‌شود. <strong>سانس‌ها به ترتیب تاریخ و ساعت پر می‌شوند:</strong> ابتدا سانس اول فعال است، پس از تکمیل ظرفیت آن روی سایت «تکمیل ظرفیت» می‌خورد و سانس بعدی خودکار فعال می‌شود.</p>
                             </div>
                             <button type="button" class="button smv-primary-button smv-add-showtime" id="smv-add-showtime">
                                 <span class="dashicons dashicons-plus-alt2"></span> افزودن سانس جدید
@@ -1208,6 +1215,19 @@ class SMV_Admin {
         $video_id = isset($_POST['video_id']) ? absint($_POST['video_id']) : 0;
         update_post_meta($post_id, '_smv_video_url', $video_url);
         update_post_meta($post_id, '_smv_video_id', $video_id);
+
+        // ویدیوهای اضافی (هر خط یک لینک)
+        if (isset($_POST['extra_videos'])) {
+            $lines = preg_split('/\r\n|\r|\n/', (string) wp_unslash($_POST['extra_videos']));
+            $extra_videos = array();
+            foreach ((array) $lines as $line) {
+                $line = esc_url_raw(trim($line));
+                if ($line) {
+                    $extra_videos[] = $line;
+                }
+            }
+            update_post_meta($post_id, '_smv_videos', maybe_serialize(array_values(array_unique($extra_videos))));
+        }
 
         // روش‌های پرداخت
         $payment_methods = isset($_POST['payment_methods']) ? array_map('sanitize_key', (array) wp_unslash($_POST['payment_methods'])) : array();

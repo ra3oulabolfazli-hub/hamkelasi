@@ -145,7 +145,12 @@ class SMV_Forms {
             }
             $remaining = smv_showtime_seats_remaining($showtime_id);
             if (null !== $remaining && $remaining <= 0) {
-                self::fail('ظرفیت این سانس تکمیل شده است. لطفاً سانس دیگری انتخاب کنید.', $old);
+                self::fail('ظرفیت این سانس تکمیل شده است (تکمیل ظرفیت). سانس بعدی به‌صورت خودکار فعال شده است؛ صفحه را تازه‌سازی کنید.', $old);
+            }
+            // رزرو ترتیبی: فقط اولین سانسِ دارای ظرفیت قابل رزرو است.
+            $active_showtime_id = function_exists('smv_active_showtime_id') ? smv_active_showtime_id($theatre_id) : 0;
+            if ($active_showtime_id && $showtime_id !== $active_showtime_id) {
+                self::fail('سانس‌ها به ترتیب پر می‌شوند؛ در حال حاضر فقط سانس اولِ دارای ظرفیت قابل رزرو است. پس از تکمیل آن، سانس بعدی فعال می‌شود.', $old);
             }
         } else {
             $showtime_id = 0;
@@ -186,8 +191,8 @@ class SMV_Forms {
             }
         }
 
-        if (empty($_POST['smv_consent'])) {
-            self::fail('برای ارسال ثبت‌نام، تأیید متن رضایت‌نامه الزامی است.', $old);
+        if (empty($_POST['smv_terms_accepted']) && empty($_POST['smv_consent'])) {
+            self::fail('برای ارسال ثبت‌نام، تیک «قوانین را خواندم و قبول می‌کنم» الزامی است.', $old);
         }
 
         $rate_key = 'smv_reg_rate_' . md5(isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : 'unknown');
