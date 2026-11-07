@@ -122,15 +122,20 @@ class SMV_Booking {
                     <div class="smv-showtime-body">
                         <h4><?php echo esc_html(get_the_title($id)); ?></h4>
                         <?php if ($venue) : ?><p class="smv-showtime-venue"><?php echo esc_html($venue); ?></p><?php endif; ?>
+                        <?php $owner_theatre = $theatre_id ? $theatre_id : absint(get_post_meta($id, '_smv_theatre_id', true)); $show_capacity = !function_exists('smv_field_visible') || smv_field_visible($owner_theatre, 'capacity'); $show_percent = !function_exists('smv_field_visible') || smv_field_visible($owner_theatre, 'capacity_percent'); ?>
+                        <?php if ($show_capacity || ($show_percent && null !== $remaining)) : ?>
                         <div class="smv-showtime-capacity">
                             <?php if (null === $remaining) : ?>
-                                <span>ظرفیت: بدون محدودیت</span>
+                                <?php if ($show_capacity) : ?><span>ظرفیت: بدون محدودیت</span><?php endif; ?>
                             <?php else : ?>
-                                <span>ظرفیت باقی‌مانده: <?php echo esc_html(SMV_Persian::digits($remaining)); ?> از <?php echo esc_html(SMV_Persian::digits($capacity)); ?></span>
+                                <?php if ($show_capacity) : ?><span>ظرفیت باقی‌مانده: <?php echo esc_html(SMV_Persian::digits($remaining)); ?></span><?php endif; ?>
+                                <?php if ($show_percent) : ?>
                                 <div class="smv-progress-bar"><div class="smv-progress-fill" style="width:<?php echo esc_attr($percent); ?>%"></div></div>
                                 <span class="smv-showtime-percent"><?php echo esc_html(SMV_Persian::digits($percent)); ?>٪ پر شده</span>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
+                        <?php endif; ?>
                         <?php if ('' !== $price && null !== $price) : ?><p class="smv-showtime-price"><?php echo esc_html(SMV_Persian::money($price)); ?></p><?php endif; ?>
                     </div>
                     <div class="smv-showtime-footer">

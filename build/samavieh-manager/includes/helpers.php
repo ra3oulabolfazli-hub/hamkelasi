@@ -68,6 +68,8 @@ function smv_theatre_display_fields() {
         'age_range' => 'ردهٔ سنی',
         'duration' => 'مدت اجرا',
         'venue' => 'محل اجرا',
+        'capacity' => 'ظرفیت (باقی‌مانده)',
+        'capacity_percent' => 'درصد تکمیل ظرفیت',
     );
 }
 

@@ -347,7 +347,7 @@ class SMV_Shortcodes {
                     ?>
                     <div class="smv-detail-item"><span><?php echo smv_icon($item[1]); ?></span><div><small><?php echo esc_html($item[0]); ?></small><strong><?php echo esc_html($item[2]); ?></strong></div></div>
                 <?php endforeach; ?>
-                <?php $remaining = smv_theatre_seats_remaining($id); if (null !== $remaining) : ?>
+                <?php $remaining = smv_theatre_seats_remaining($id); if (null !== $remaining && (!function_exists('smv_field_visible') || smv_field_visible($id, 'capacity'))) : ?>
                     <div class="smv-detail-item"><span><?php echo smv_icon('ticket'); ?></span><div><small>ظرفیت باقی‌مانده</small><strong><?php echo esc_html(SMV_Persian::digits($remaining)); ?> نفر</strong></div></div>
                 <?php endif; ?>
             </div>
@@ -526,7 +526,7 @@ class SMV_Shortcodes {
                                                 <?php elseif (null === $st['remaining']) : ?>
                                                     ( ظرفیت آزاد )
                                                 <?php else : ?>
-                                                    ( <?php echo esc_html(SMV_Persian::digits($st['remaining'])); ?> از <?php echo esc_html(SMV_Persian::digits($st['capacity'])); ?> صندلی خالی )
+                                                    <?php if (!function_exists('smv_field_visible') || smv_field_visible($theatre_id, 'capacity')) : ?>( <?php echo esc_html(SMV_Persian::digits($st['remaining'])); ?> صندلی خالی )<?php endif; ?>
                                                 <?php endif; ?>
                                             </option>
                                         <?php endforeach; ?>
