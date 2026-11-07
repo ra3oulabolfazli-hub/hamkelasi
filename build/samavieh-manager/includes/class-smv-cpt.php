@@ -6,6 +6,7 @@ if (!defined('ABSPATH')) {
 class SMV_CPT {
     public static function init() {
         add_action('init', array(__CLASS__, 'register_post_types'));
+        add_action('init', array(__CLASS__, 'register_taxonomies'), 11);
     }
 
     public static function register_post_types() {
@@ -119,6 +120,37 @@ class SMV_CPT {
             'map_meta_cap' => true,
         ));
 
+
+        register_post_type('smv_article', array(
+            'labels' => array(
+                'name' => 'مقالات',
+                'singular_name' => 'مقاله',
+                'menu_name' => 'مقالات',
+                'add_new' => 'افزودن مقاله',
+                'add_new_item' => 'افزودن مقالهٔ جدید',
+                'edit_item' => 'ویرایش مقاله',
+                'new_item' => 'مقالهٔ جدید',
+                'view_item' => 'مشاهدهٔ مقاله',
+                'search_items' => 'جست‌وجوی مقالات',
+                'not_found' => 'هنوز مقاله‌ای اضافه نشده است.',
+                'not_found_in_trash' => 'مقاله‌ای در زباله‌دان نیست.',
+                'featured_image' => 'تصویر شاخص مقاله',
+                'set_featured_image' => 'انتخاب تصویر شاخص',
+                'remove_featured_image' => 'حذف تصویر شاخص',
+            ),
+            'public' => true,
+            'show_in_rest' => true,
+            'show_ui' => true,
+            'show_in_menu' => false,
+            'menu_icon' => 'dashicons-media-document',
+            'supports' => array('title', 'editor', 'excerpt', 'thumbnail', 'author', 'comments', 'revisions', 'custom-fields'),
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'maghale', 'with_front' => false),
+            'taxonomies' => array('smv_article_cat', 'smv_article_tag'),
+            'capability_type' => array('smv_article', 'smv_articles'),
+            'map_meta_cap' => true,
+        ));
+
         // نوع نوشتهٔ قدیمی نظرات برای سازگاری باقی می‌ماند؛
         // نظرات جدید در جدول اختصاصی افزونه ذخیره می‌شوند.
         register_post_type('smv_review', array(
@@ -136,6 +168,19 @@ class SMV_CPT {
             'rewrite' => false,
             'capability_type' => array('smv_review', 'smv_reviews'),
             'map_meta_cap' => true,
+        ));
+    }
+
+    public static function register_taxonomies() {
+        register_taxonomy('smv_article_cat', array('smv_article'), array(
+            'labels' => array('name' => 'دسته‌های مقالات', 'singular_name' => 'دستهٔ مقاله', 'add_new_item' => 'افزودن دسته', 'edit_item' => 'ویرایش دسته', 'search_items' => 'جست‌وجوی دسته‌ها'),
+            'public' => true, 'hierarchical' => true, 'show_in_rest' => true, 'show_ui' => true, 'show_in_menu' => false,
+            'rewrite' => array('slug' => 'maghale-cat', 'with_front' => false),
+        ));
+        register_taxonomy('smv_article_tag', array('smv_article'), array(
+            'labels' => array('name' => 'برچسب‌های مقالات', 'singular_name' => 'برچسب مقاله', 'add_new_item' => 'افزودن برچسب', 'edit_item' => 'ویرایش برچسب', 'search_items' => 'جست‌وجوی برچسب‌ها'),
+            'public' => true, 'hierarchical' => false, 'show_in_rest' => true, 'show_ui' => true, 'show_in_menu' => false,
+            'rewrite' => array('slug' => 'maghale-tag', 'with_front' => false),
         ));
     }
 }

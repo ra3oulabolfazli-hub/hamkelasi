@@ -112,7 +112,7 @@ class SMV_Activator {
 
     public static function capabilities() {
         $caps = array('manage_smv_registrations');
-        foreach (array('smv_theatre', 'smv_project', 'smv_showtime', 'smv_poll', 'smv_review') as $type) {
+        foreach (array('smv_theatre', 'smv_project', 'smv_showtime', 'smv_poll', 'smv_review', 'smv_article') as $type) {
             $plural = $type . 's';
             $caps = array_merge($caps, array(
                 'edit_' . $type,
