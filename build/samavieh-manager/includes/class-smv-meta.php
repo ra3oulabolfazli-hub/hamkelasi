@@ -65,7 +65,7 @@ class SMV_Meta {
 
         $methods = smv_theatre_payment_methods($post->ID);
         echo '<div class="smv-admin-field"><strong>روش‌های پرداخت فعال</strong><div class="smv-payment-options">';
-        foreach (array('free' => 'رایگان', 'financial_aid' => 'کمک مالی', 'paid' => 'پرداخت آنلاین (زرین‌پال)') as $key => $label) {
+        foreach (array('free' => 'رایگان', 'paid' => 'هزینهٔ ثبت‌نام (مبلغ مشخص)', 'financial_aid' => 'کمک مالی (مبلغ به انتخاب شخص)') as $key => $label) {
             echo '<label><input type="checkbox" name="smv_payment_methods[]" value="' . esc_attr($key) . '" ' . checked(in_array($key, $methods, true), true, false) . ' /> ' . esc_html($label) . '</label>';
         }
         echo '</div><small>این روش‌ها در فرم ثبت‌نام همین اجرا نمایش داده می‌شوند.</small></div>';

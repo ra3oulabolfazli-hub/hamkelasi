@@ -105,7 +105,12 @@ class SMV_Shortcodes {
                     <div><span class="smv-kicker">روی صحنهٔ سماویه</span><h2>تئاترهای پیش رو</h2><p>اجرای موردنظر را انتخاب کنید و ثبت‌نام را آنلاین انجام دهید.</p></div>
                     <a class="smv-text-link" href="<?php echo esc_url(smv_theatres_url()); ?>">مشاهده همه <?php echo smv_icon('arrow'); ?></a>
                 </div>
-                <?php echo do_shortcode('[samavieh_theatres count="3" columns="3"]'); ?>
+                <?php echo do_shortcode('[samavieh_theatres count="3" columns="3" show_price="0"]'); ?>
+            </section>
+
+            <section class="smv-section smv-container smv-home-social">
+                <div class="smv-centered-heading"><span class="smv-kicker">همراه سماویه باشید</span><h2>شبکه‌های اجتماعی سماویه</h2><p>ما را در روبیکا، ایتا، بله و دیگر شبکه‌ها دنبال کنید.</p></div>
+                <?php echo do_shortcode('[samavieh_social]'); ?>
             </section>
 
             <section class="smv-about-band">
@@ -131,7 +136,7 @@ class SMV_Shortcodes {
                     <div class="smv-centered-heading"><span class="smv-kicker">فقط در سه مرحله</span><h2>از انتخاب اجرا تا تأیید ثبت‌نام</h2></div>
                     <div class="smv-steps">
                         <article><span>۱</span><div><h3>تئاتر و سانس را انتخاب کنید</h3><p>زمان، محل اجرا و ظرفیت را بررسی کنید.</p></div></article>
-                        <article><span>۲</span><div><h3>روش پرداخت و فیش را انتخاب کنید</h3><p>رایگان، کمک مالی یا پرداخت آنلاین با زرین‌پال.</p></div></article>
+                        <article><span>۲</span><div><h3>روش هزینه را انتخاب کنید</h3><p>رایگان، هزینهٔ ثبت‌نام با مبلغ مشخص، یا کمک مالی با مبلغی که خودتان تعیین می‌کنید.</p></div></article>
                         <article><span>۳</span><div><h3>کد پیگیری را نگه دارید</h3><p>نتیجهٔ بررسی را هر زمان با کد و شماره تماس ببینید.</p></div></article>
                     </div>
                 </div>
@@ -150,7 +155,8 @@ class SMV_Shortcodes {
 
     public static function theatres($atts) {
         SMV_Plugin::enqueue_frontend();
-        $atts = shortcode_atts(array('count' => -1, 'columns' => 3, 'ids' => ''), $atts, 'samavieh_theatres');
+        $atts = shortcode_atts(array('count' => -1, 'columns' => 3, 'ids' => '', 'show_price' => 1), $atts, 'samavieh_theatres');
+        $show_price = !empty($atts['show_price']) && '0' !== (string) $atts['show_price'];
         $args = array(
             'post_type' => 'smv_theatre',
             'post_status' => 'publish',
@@ -192,7 +198,7 @@ class SMV_Shortcodes {
                             <?php if ($date) : ?><span><?php echo smv_icon('calendar'); ?><?php echo esc_html(SMV_Persian::date($date)); ?></span><?php endif; ?>
                             <?php if ($venue) : ?><span><?php echo smv_icon('pin'); ?><?php echo esc_html($venue); ?></span><?php endif; ?>
                         </div>
-                        <div class="smv-card-footer"><strong><?php echo esc_html(SMV_Persian::money($price)); ?></strong><a href="<?php the_permalink(); ?>"><?php echo $open ? 'جزئیات و ثبت‌نام' : 'مشاهده جزئیات'; ?> <?php echo smv_icon('arrow'); ?></a></div>
+                        <div class="smv-card-footer"><?php if ($show_price) : ?><strong><?php echo esc_html(SMV_Persian::money($price)); ?></strong><?php endif; ?><a href="<?php the_permalink(); ?>"><?php echo $open ? 'جزئیات و ثبت‌نام' : 'مشاهده جزئیات'; ?> <?php echo smv_icon('arrow'); ?></a></div>
                     </div>
                 </article>
                 <?php
@@ -347,8 +353,8 @@ class SMV_Shortcodes {
                     <h3>روش‌های پرداخت</h3>
                     <div class="smv-payment-options">
                         <?php if (in_array('free', $payment_methods, true)) : ?><span class="smv-payment-badge is-free"><?php echo smv_icon('ticket'); ?> رایگان</span><?php endif; ?>
-                        <?php if (in_array('financial_aid', $payment_methods, true)) : ?><span class="smv-payment-badge is-aid"><?php echo smv_icon('user'); ?> کمک مالی</span><?php endif; ?>
-                        <?php if (in_array('paid', $payment_methods, true)) : ?><span class="smv-payment-badge is-paid"><?php echo smv_icon('play'); ?> پرداخت آنلاین</span><?php endif; ?>
+                        <?php if (in_array('paid', $payment_methods, true)) : ?><span class="smv-payment-badge is-paid"><?php echo smv_icon('ticket'); ?> هزینهٔ ثبت‌نام (مبلغ مشخص<?php echo $price ? ' — ' . esc_html(SMV_Persian::money($price)) : ''; ?>)</span><?php endif; ?>
+                        <?php if (in_array('financial_aid', $payment_methods, true)) : ?><span class="smv-payment-badge is-aid"><?php echo smv_icon('user'); ?> کمک مالی (مبلغ به انتخاب شما)</span><?php endif; ?>
                     </div>
                 </div>
 
@@ -402,29 +408,33 @@ class SMV_Shortcodes {
 
         $rendered = true;
 
-        // سانس‌ها به ترتیب اولویت: فقط اولین سانس دارای ظرفیت «فعال» و قابل انتخاب است؛
-        // قبلی‌ها «تکمیل ظرفیت» و بعدی‌ها «در انتظار» نمایش داده می‌شوند (غیرقابل انتخاب).
-        $active_showtime_id = function_exists('smv_active_showtime_id') ? smv_active_showtime_id($theatre_id) : 0;
-        $showtimes = array();
-        $priority = 0;
-        foreach (smv_ordered_showtimes_for_theatre($theatre_id) as $showtime) {
-            $sid = $showtime->ID;
-            $priority++;
-            $remaining = smv_showtime_seats_remaining($sid);
-            $state = (null !== $remaining && $remaining <= 0) ? 'full' : (($active_showtime_id && (int) $sid === (int) $active_showtime_id) ? 'active' : 'waiting');
-            $showtimes[] = array(
-                'id' => $sid,
-                'priority' => $priority,
-                'state' => $state,
-                'date' => get_post_meta($sid, '_smv_showtime_date', true),
-                'time' => get_post_meta($sid, '_smv_showtime_time', true),
-                'time_end' => get_post_meta($sid, '_smv_showtime_time_end', true),
-                'venue' => get_post_meta($sid, '_smv_showtime_venue', true),
-                'price' => get_post_meta($sid, '_smv_showtime_price', true),
-                'remaining' => $remaining,
-                'capacity' => absint(get_post_meta($sid, '_smv_capacity', true)),
-            );
+        // سانس‌ها روزبه‌روز و داخل هر روز به ترتیب اولویت پر می‌شوند:
+        // در هر روز فقط اولین سانس دارای ظرفیت «فعال» و قابل انتخاب است؛
+        // قبلی‌های همان روز «تکمیل ظرفیت» و بعدی‌های همان روز «در انتظار» هستند. روزهای مختلف مستقل‌اند.
+        $active_ids_by_day = function_exists('smv_active_showtime_ids') ? smv_active_showtime_ids($theatre_id) : array();
+        $showtimes_by_day = array();
+        foreach (smv_group_showtimes_by_day($theatre_id) as $day_date => $day_showtimes) {
+            $priority = 0;
+            foreach ($day_showtimes as $showtime) {
+                $sid = $showtime->ID;
+                $priority++;
+                $remaining = smv_showtime_seats_remaining($sid);
+                $state = (null !== $remaining && $remaining <= 0) ? 'full' : ((isset($active_ids_by_day[$day_date]) && (int) $sid === (int) $active_ids_by_day[$day_date]) ? 'active' : 'waiting');
+                $showtimes_by_day[$day_date][] = array(
+                    'id' => $sid,
+                    'priority' => $priority,
+                    'state' => $state,
+                    'date' => get_post_meta($sid, '_smv_showtime_date', true),
+                    'time' => get_post_meta($sid, '_smv_showtime_time', true),
+                    'time_end' => get_post_meta($sid, '_smv_showtime_time_end', true),
+                    'venue' => get_post_meta($sid, '_smv_showtime_venue', true),
+                    'price' => get_post_meta($sid, '_smv_showtime_price', true),
+                    'remaining' => $remaining,
+                    'capacity' => absint(get_post_meta($sid, '_smv_capacity', true)),
+                );
+            }
         }
+        $fixed_fee = function_exists('smv_registration_fixed_fee') ? smv_registration_fixed_fee($theatre_id) : 0;
 
         $payment_methods = smv_theatre_payment_methods($theatre_id);
         $state = SMV_Forms::state();
@@ -469,59 +479,70 @@ class SMV_Shortcodes {
                         <div class="smv-field"><label for="smv-last-name-<?php echo esc_attr($theatre_id); ?>">نام خانوادگی <b>*</b></label><input id="smv-last-name-<?php echo esc_attr($theatre_id); ?>" type="text" name="last_name" value="<?php echo esc_attr(isset($old['last_name']) ? $old['last_name'] : ''); ?>" required maxlength="100" autocomplete="family-name" placeholder="نام خانوادگی خود را وارد کنید" /></div>
                         <div class="smv-field smv-field-full"><label for="smv-phone-<?php echo esc_attr($theatre_id); ?>">شماره تماس <b>*</b></label><input id="smv-phone-<?php echo esc_attr($theatre_id); ?>" type="tel" name="phone" value="<?php echo esc_attr(isset($old['phone']) ? $old['phone'] : ''); ?>" required inputmode="tel" dir="ltr" maxlength="16" autocomplete="tel" placeholder="09121234567" /><small>شمارهٔ موبایلی وارد کنید که برای پیگیری در دسترس شما باشد.</small></div>
 
-                        <!-- Showtime selection -->
-                        <?php if (!empty($showtimes)) : ?>
+                        <!-- Showtime selection (گروه‌بندی بر اساس روز، اولویت داخل هر روز) -->
+                        <?php if (!empty($showtimes_by_day)) : ?>
                             <div class="smv-field smv-field-full">
                                 <label for="smv-showtime-<?php echo esc_attr($theatre_id); ?>">انتخاب سانس <b>*</b></label>
                                 <select name="showtime_id" id="smv-showtime-<?php echo esc_attr($theatre_id); ?>" required>
-                                    <?php if (!$active_showtime_id) : ?><option value="">— همهٔ سانس‌ها تکمیل ظرفیت هستند —</option><?php endif; ?>
-                                    <?php foreach ($showtimes as $st) : ?>
-                                        <option value="<?php echo esc_attr($st['id']); ?>" data-price="<?php echo esc_attr($st['price']); ?>" data-state="<?php echo esc_attr($st['state']); ?>" data-remaining="<?php echo esc_attr(null === $st['remaining'] ? -1 : $st['remaining']); ?>" <?php echo 'active' === $st['state'] ? 'selected' : 'disabled'; ?>>
-                                            سانس <?php echo esc_html(SMV_Persian::digits($st['priority'])); ?> — <?php echo esc_html(SMV_Persian::date($st['date'])); ?><?php echo ($st['time'] || $st['time_end']) ? ' — ' . esc_html(SMV_Persian::time_range($st['time'], $st['time_end'])) : ''; ?>
-                                            <?php if ('full' === $st['state']) : ?>
-                                                ( تکمیل ظرفیت )
-                                            <?php elseif ('waiting' === $st['state']) : ?>
-                                                ( در انتظار تکمیل سانس قبلی )
-                                            <?php elseif (null === $st['remaining']) : ?>
-                                                ( ظرفیت آزاد )
-                                            <?php else : ?>
-                                                ( <?php echo esc_html(SMV_Persian::digits($st['remaining'])); ?> از <?php echo esc_html(SMV_Persian::digits($st['capacity'])); ?> صندلی خالی )
-                                            <?php endif; ?>
-                                        </option>
+                                    <?php if (empty($active_ids_by_day)) : ?><option value="">— همهٔ سانس‌ها تکمیل ظرفیت هستند —</option><?php endif; ?>
+                                    <?php $day_number = 0; $smv_default_selected_done = false; foreach ($showtimes_by_day as $day_date => $day_items) : $day_number++; ?>
+                                        <optgroup label="روز <?php echo esc_attr(SMV_Persian::digits($day_number)); ?> — <?php echo esc_attr(SMV_Persian::date($day_date)); ?>">
+                                        <?php foreach ($day_items as $st) : ?>
+                                            <?php $is_default = ('active' === $st['state'] && !$smv_default_selected_done); if ($is_default) { $smv_default_selected_done = true; } ?>
+                                            <option value="<?php echo esc_attr($st['id']); ?>" data-price="<?php echo esc_attr($st['price']); ?>" data-state="<?php echo esc_attr($st['state']); ?>" data-remaining="<?php echo esc_attr(null === $st['remaining'] ? -1 : $st['remaining']); ?>" <?php echo 'active' === $st['state'] ? '' : 'disabled'; ?> <?php echo $is_default ? 'selected' : ''; ?>>
+                                                اولویت <?php echo esc_html(SMV_Persian::digits($st['priority'])); ?> — <?php echo esc_html(SMV_Persian::date($st['date'])); ?><?php echo ($st['time'] || $st['time_end']) ? ' — ' . esc_html(SMV_Persian::time_range($st['time'], $st['time_end'])) : ''; ?>
+                                                <?php if ('full' === $st['state']) : ?>
+                                                    ( تکمیل ظرفیت )
+                                                <?php elseif ('waiting' === $st['state']) : ?>
+                                                    ( در انتظار تکمیل سانس قبلیِ همین روز )
+                                                <?php elseif (null === $st['remaining']) : ?>
+                                                    ( ظرفیت آزاد )
+                                                <?php else : ?>
+                                                    ( <?php echo esc_html(SMV_Persian::digits($st['remaining'])); ?> از <?php echo esc_html(SMV_Persian::digits($st['capacity'])); ?> صندلی خالی )
+                                                <?php endif; ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                        </optgroup>
                                     <?php endforeach; ?>
                                 </select>
-                                <small>سانس‌ها به ترتیب پر می‌شوند: ابتدا سانس اول فعال است و پس از تکمیل ظرفیت آن، سانس بعدی به‌صورت خودکار فعال می‌شود. سانس‌های «تکمیل ظرفیت» و «در انتظار» قابل انتخاب نیستند.</small>
+                                <small>سانس‌ها روزبه‌روز و داخل هر روز به ترتیب اولویت پر می‌شوند؛ در هر روز فقط سانس فعال قابل انتخاب است و روزهای مختلف مستقل از هم هستند.</small>
                             </div>
                         <?php endif; ?>
 
-                        <!-- Payment type selection -->
+                        <!-- Payment type selection: رایگان / هزینهٔ ثبت‌نام (مبلغ مشخص) / کمک مالی (مبلغ به انتخاب شخص) -->
                         <div class="smv-field smv-field-full smv-payment-type-field">
-                            <label for="smv-payment-type">روش پرداخت <b>*</b></label>
+                            <label for="smv-payment-type">هزینه و روش پرداخت <b>*</b></label>
                             <select name="payment_type" id="smv-payment-type" required>
-                                <option value="">-- روش پرداخت را انتخاب کنید --</option>
+                                <option value="">-- روش را انتخاب کنید --</option>
                                 <?php if (in_array('free', $payment_methods, true)) : ?>
-                                    <option value="free">رایگان (بدون هزینه)</option>
-                                <?php endif; ?>
-                                <?php if (in_array('financial_aid', $payment_methods, true)) : ?>
-                                    <option value="financial_aid">کمک مالی (مبلغ دلخواه)</option>
+                                    <option value="free">رایگان — بدون هزینه</option>
                                 <?php endif; ?>
                                 <?php if (in_array('paid', $payment_methods, true)) : ?>
-                                    <option value="paid">پرداخت آنلاین / فیش واریزی</option>
+                                    <option value="paid">هزینهٔ ثبت‌نام — مبلغ مشخص<?php echo $fixed_fee ? ' (' . esc_html(SMV_Persian::money($fixed_fee)) . ')' : ''; ?></option>
+                                <?php endif; ?>
+                                <?php if (in_array('financial_aid', $payment_methods, true)) : ?>
+                                    <option value="financial_aid">کمک مالی — مبلغ را خودتان مشخص می‌کنید</option>
                                 <?php endif; ?>
                             </select>
+                            <small>سه روش: «رایگان» بدون هزینه است؛ «هزینهٔ ثبت‌نام» مبلغش از قبل مشخص شده؛ در «کمک مالی» مبلغ را خودتان تعیین می‌کنید.</small>
                         </div>
 
-                        <!-- Amount (for financial aid) -->
+                        <!-- Fixed fee notice (هزینهٔ ثبت‌نام با مبلغ مشخص) -->
+                        <div class="smv-field smv-field-full smv-fixed-fee-box" style="display:none;">
+                            <div class="smv-fixed-fee-note">هزینهٔ ثبت‌نام این اجرا: <strong data-smv-fixed-fee><?php echo $fixed_fee ? esc_html(SMV_Persian::money($fixed_fee)) : ''; ?></strong><small>این مبلغ از قبل مشخص شده است؛ فیش واریز آن را در بخش «فیش واریزی» بارگذاری کنید. (مبلغ نهایی بر اساس سانس انتخابی است.)</small></div>
+                        </div>
+
+                        <!-- Amount for financial aid: مبلغ توسط خود شخص -->
                         <div class="smv-field smv-field-full smv-financial-aid-amount" style="display:none;">
-                            <label>مبلغ پیشنهادی کمک مالی (تومان) <b>*</b></label>
-                            <input type="number" name="financial_aid_amount" id="smv-financial-aid-amount" min="0" placeholder="مثلاً 50000" />
-                            <small>مبلغی که تماس کمک به اجرا می‌دهید.</small>
+                            <label>مبلغ کمک مالی (تومان) — به انتخاب شما <b>*</b></label>
+                            <input type="number" name="financial_aid_amount" id="smv-financial-aid-amount" min="1000" step="1000" placeholder="مثلاً ۵۰۰۰۰" />
+                            <small>هر مبلغی که مایلید به‌عنوان کمک مالی پرداخت کنید را خودتان وارد کنید و فیش آن را بارگذاری کنید.</small>
                         </div>
 
-                        <!-- Reason (for financial aid) -->
+                        <!-- Optional note for financial aid -->
                         <div class="smv-field smv-field-full smv-financial-aid-reason" style="display:none;">
-                            <label>دليل درخواست کمک مالی <b>*</b></label>
-                            <textarea name="financial_aid_reason" id="smv-financial-aid-reason" rows="3" placeholder="چرا به کمک مالی نیاز دارید؟"></textarea>
+                            <label>توضیح (اختیاری)</label>
+                            <textarea name="financial_aid_reason" id="smv-financial-aid-reason" rows="2" placeholder="اگر توضیحی دارید بنویسید (اختیاری)"></textarea>
                         </div>
 
                         <!-- Receipt upload -->
@@ -558,8 +579,10 @@ class SMV_Shortcodes {
 
                     function toggleFields() {
                         var val = paymentSelect ? paymentSelect.value : '';
+                        var feeBox = document.querySelector('.smv-fixed-fee-box');
                         if (amountField) amountField.style.display = (val === 'financial_aid') ? 'block' : 'none';
                         if (reasonField) reasonField.style.display = (val === 'financial_aid') ? 'block' : 'none';
+                        if (feeBox) feeBox.style.display = (val === 'paid') ? 'block' : 'none';
                         if (val === 'free') {
                             if (receiptField) receiptField.style.display = 'none';
                             if (receiptInput) receiptInput.removeAttribute('required');
@@ -581,6 +604,16 @@ class SMV_Shortcodes {
                     if (paymentSelect) {
                         paymentSelect.addEventListener('change', toggleFields);
                     }
+                    var showtimeSelect = document.getElementById('smv-showtime-<?php echo esc_js($theatre_id); ?>');
+                    function syncFee() {
+                        var feeEl = document.querySelector('[data-smv-fixed-fee]');
+                        if (!feeEl || !showtimeSelect) { return; }
+                        var opt = showtimeSelect.options[showtimeSelect.selectedIndex];
+                        var price = opt ? parseInt(opt.getAttribute('data-price') || '0', 10) : 0;
+                        if (price > 0) { feeEl.textContent = price.toLocaleString('fa-IR') + ' تومان'; }
+                    }
+                    if (showtimeSelect) { showtimeSelect.addEventListener('change', syncFee); }
+                    syncFee();
                     toggleFields();
                 });
                 </script>

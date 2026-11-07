@@ -513,3 +513,21 @@ a.smv-contact-card:hover { border-color: #c9a45f; box-shadow: var(--smv-shadow);
 .smv-star-rating-text{display:block;margin-top:6px}
 @media (max-width:560px){.smv-reviews-summary{flex-direction:column;text-align:center}.smv-star-rating{justify-content:center}.smv-theatre-gallery{grid-template-columns:repeat(2,1fr)}}
 @media (prefers-reduced-motion:reduce){.smv-stars-animated .smv-star.filled,.smv-star-btn.is-filled{animation:none}}
+
+/* ===== v1.6.0: روزها، هزینه‌ها و آیکن‌های واقعی شبکه‌های اجتماعی ===== */
+.smv-showtime-day{margin:0 0 22px}
+.smv-showtime-day-title{display:flex;align-items:center;gap:10px;color:var(--smv-primary);font-size:16px;margin:0 0 12px}
+.smv-showtime-day-title span{background:var(--smv-primary);color:#fff;border-radius:999px;padding:3px 12px;font-size:12px}
+.smv-fixed-fee-note{padding:14px 16px;border:1px solid #b8d8c6;border-radius:12px;background:#eef8f2;color:#245f48;font-size:13px}
+.smv-fixed-fee-note strong{color:var(--smv-primary);font-size:16px}
+.smv-fixed-fee-note small{display:block;margin-top:4px;color:var(--smv-muted);font-size:11px}
+.smv-home-social .smv-social-profile{max-width:840px;margin:0 auto}
+.smv-social-icon{width:64px;height:64px;min-width:64px;border-radius:16px;overflow:hidden;background:transparent!important;box-shadow:0 10px 24px rgba(13,51,46,.18);padding:0}
+.smv-brand-svg{display:block;width:64px;height:64px}
+.smv-social-links--large{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px}
+.smv-social-links--large a.smv-social-link{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 16px;border-radius:16px;background:#fff;border:1px solid var(--smv-line);font-size:13px;font-weight:800;color:var(--smv-primary);min-width:104px;transition:transform .18s,box-shadow .18s}
+.smv-social-links--large a.smv-social-link:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(13,51,46,.12)}
+.smv-social-links--large .smv-social-icon{width:56px;height:56px;min-width:56px;border-radius:14px}
+.smv-social-links--large .smv-brand-svg{width:56px;height:56px}
+.smv-social-card .smv-social-icon{width:64px;height:64px}
+@media (max-width:560px){.smv-social-links--large a.smv-social-link{min-width:88px;padding:12px}.smv-social-icon,.smv-brand-svg{width:56px;height:56px}}

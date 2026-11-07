@@ -147,10 +147,10 @@ class SMV_Forms {
             if (null !== $remaining && $remaining <= 0) {
                 self::fail('ظرفیت این سانس تکمیل شده است (تکمیل ظرفیت). سانس بعدی به‌صورت خودکار فعال شده است؛ صفحه را تازه‌سازی کنید.', $old);
             }
-            // رزرو ترتیبی: فقط اولین سانسِ دارای ظرفیت قابل رزرو است.
-            $active_showtime_id = function_exists('smv_active_showtime_id') ? smv_active_showtime_id($theatre_id) : 0;
-            if ($active_showtime_id && $showtime_id !== $active_showtime_id) {
-                self::fail('سانس‌ها به ترتیب پر می‌شوند؛ در حال حاضر فقط سانس اولِ دارای ظرفیت قابل رزرو است. پس از تکمیل آن، سانس بعدی فعال می‌شود.', $old);
+            // رزرو ترتیبیِ روزبه‌روز: در هر روز فقط اولین سانسِ دارای ظرفیتِ همان روز (بر اساس اولویت) قابل رزرو است.
+            $is_active_today = function_exists('smv_showtime_is_active') ? smv_showtime_is_active($showtime_id, $theatre_id) : true;
+            if (!$is_active_today) {
+                self::fail('سانس‌های هر روز به ترتیب اولویت پر می‌شوند؛ این سانس هنوز فعال نشده است. ابتدا سانسِ قبلیِ همان روز باید تکمیل شود.', $old);
             }
         } else {
             $showtime_id = 0;
@@ -173,21 +173,16 @@ class SMV_Forms {
 
         $amount = 0;
         if ('financial_aid' === $payment_type) {
+            // کمک مالی: مبلغ را خود شخص مشخص می‌کند.
             if ($financial_aid_amount <= 0) {
-                self::fail('لطفاً مبلغ کمک مالی را وارد کنید.', $old);
-            }
-            if (empty($financial_aid_reason)) {
-                self::fail('لطفاً دلیل درخواست کمک مالی را بنویسید.', $old);
+                self::fail('لطفاً مبلغ کمک مالی را خودتان وارد کنید.', $old);
             }
             $amount = $financial_aid_amount;
         } elseif ('paid' === $payment_type) {
-            $price = $showtime_id ? get_post_meta($showtime_id, '_smv_showtime_price', true) : '';
-            if ('' === $price || null === $price) {
-                $price = get_post_meta($theatre_id, '_smv_price', true);
-            }
-            $amount = absint($price);
+            // هزینهٔ ثبت‌نام: مبلغ از قبل مشخص است (قیمت سانس، و اگر نبود قیمت اجرا)
+            $amount = function_exists('smv_registration_fixed_fee') ? smv_registration_fixed_fee($theatre_id, $showtime_id) : 0;
             if ($amount <= 0) {
-                self::fail('هزینهٔ این اجرا تعریف نشده است. لطفاً روش پرداخت دیگری انتخاب کنید.', $old);
+                self::fail('هزینهٔ ثبت‌نام این اجرا مشخص نشده است. لطفاً روش دیگری (رایگان یا کمک مالی) انتخاب کنید.', $old);
             }
         }
 

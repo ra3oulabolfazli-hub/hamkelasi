@@ -49,13 +49,25 @@ class SMV_Booking {
         } elseif ($theatre_id) {
             $ordered_posts = smv_ordered_showtimes_for_theatre($theatre_id);
         }
-        $active_id = $theatre_id ? smv_active_showtime_id($theatre_id) : 0;
+        $active_ids = $theatre_id ? smv_active_showtime_ids($theatre_id) : array();
+        // گروه‌بندی بر اساس روز: هر روز مستقل و به ترتیب خودش پر می‌شود.
+        $day_groups = array();
+        foreach ($ordered_posts as $ordered_post) {
+            $day_key = (string) get_post_meta($ordered_post->ID, '_smv_showtime_date', true);
+            $day_groups[$day_key][] = $ordered_post;
+        }
+        ksort($day_groups);
         ob_start();
         if ($ordered_posts) :
-            echo '<p class="smv-showtime-order-note">سانس‌ها به ترتیب پر می‌شوند؛ ابتدا سانس اول، و پس از تکمیل ظرفیت آن، سانس بعدی فعال می‌شود.</p>';
-            echo '<div class="smv-showtime-grid smv-columns-' . esc_attr($columns) . '">';
-            $priority = 0;
-            foreach ($ordered_posts as $showtime_post) :
+            echo '<p class="smv-showtime-order-note">سانس‌ها <strong>روزبه‌روز</strong> و داخل هر روز <strong>به ترتیب اولویت</strong> پر می‌شوند؛ در هر روز ابتدا سانس با اولویت اول فعال است و پس از تکمیل ظرفیت آن، سانس بعدیِ همان روز فعال می‌شود. روزهای مختلف مستقل از هم هستند.</p>';
+            $day_number = 0;
+            foreach ($day_groups as $day_date => $day_posts) :
+                $day_number++;
+                echo '<div class="smv-showtime-day" data-smv-day="' . esc_attr($day_date) . '">';
+                echo '<h4 class="smv-showtime-day-title"><span>روز ' . esc_html(SMV_Persian::digits($day_number)) . '</span> ' . esc_html(SMV_Persian::date($day_date)) . '</h4>';
+                echo '<div class="smv-showtime-grid smv-columns-' . esc_attr($columns) . '">';
+                $priority = 0;
+                foreach ($day_posts as $showtime_post) :
                 $priority++;
                 $id = (int) $showtime_post->ID;
                 $GLOBALS['__current_id'] = $id;
@@ -69,12 +81,12 @@ class SMV_Booking {
                 $booked = smv_showtime_booked_count($id);
                 $percent = ($capacity > 0) ? min(100, round(($booked / $capacity) * 100)) : 0;
                 $is_full = (null !== $remaining && $remaining <= 0);
-                $state = $is_full ? 'full' : (($active_id && $active_id === $id) || !$theatre_id ? 'active' : 'waiting');
-                $state_label = 'full' === $state ? 'تکمیل ظرفیت' : ('active' === $state ? 'در حال ثبت‌نام' : 'در انتظار تکمیل سانس قبلی');
+                $state = $is_full ? 'full' : ((isset($active_ids[$day_date]) && (int) $active_ids[$day_date] === $id) || !$theatre_id ? 'active' : 'waiting');
+                $state_label = 'full' === $state ? 'تکمیل ظرفیت' : ('active' === $state ? 'در حال ثبت‌نام' : 'در انتظار تکمیل سانس قبلیِ همین روز');
                 ?>
                 <article class="smv-showtime-card<?php echo $is_full ? ' is-full' : ''; ?> is-<?php echo esc_attr($state); ?>" data-smv-showtime-state="<?php echo esc_attr($state); ?>">
                     <div class="smv-showtime-header">
-                        <span class="smv-showtime-priority">سانس <?php echo esc_html(SMV_Persian::digits($priority)); ?></span>
+                        <span class="smv-showtime-priority">اولویت <?php echo esc_html(SMV_Persian::digits($priority)); ?></span>
                         <span class="smv-showtime-date"><?php echo esc_html(SMV_Persian::date($date)); ?></span>
                         <span class="smv-showtime-time"><?php echo esc_html(SMV_Persian::time_range($time, $time_end)); ?></span>
                         <span class="smv-showtime-state smv-state-<?php echo esc_attr($state); ?>"><?php echo esc_html($state_label); ?></span>
@@ -104,8 +116,9 @@ class SMV_Booking {
                     </div>
                 </article>
                 <?php
+                endforeach;
+                echo '</div></div>';
             endforeach;
-            echo '</div>';
         else :
             echo '<div class="smv-empty">' . smv_icon('calendar') . '<h3>سانسی برای این اجرا برنامه‌ریزی نشده است</h3><p>به‌زودی سانس‌های جدید اضافه می‌شود.</p></div>';
         endif;

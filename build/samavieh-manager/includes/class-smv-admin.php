@@ -705,7 +705,7 @@ class SMV_Admin {
                         <div class="smv-showtime-toolbar">
                             <div class="smv-showtime-toolbar-text">
                                 <h3><span class="dashicons dashicons-calendar-alt"></span> سانس‌ها و ظرفیت</h3>
-                                <p>برای هر اجرا می‌توانید چند سانس با تاریخ، ساعت، ظرفیت و قیمت جداگانه تعریف کنید. تغییرات با دکمهٔ «<?php echo esc_html($button_text); ?>» ذخیره می‌شود. <strong>سانس‌ها به ترتیب تاریخ و ساعت پر می‌شوند:</strong> ابتدا سانس اول فعال است، پس از تکمیل ظرفیت آن روی سایت «تکمیل ظرفیت» می‌خورد و سانس بعدی خودکار فعال می‌شود.</p>
+                                <p>برای هر اجرا می‌توانید چند سانس با تاریخ، ساعت، ظرفیت و قیمت جداگانه تعریف کنید. تغییرات با دکمهٔ «<?php echo esc_html($button_text); ?>» ذخیره می‌شود. <strong>سانس‌ها روزبه‌روز پر می‌شوند:</strong> داخل هر روز، سانس با «اولویت» کمتر (۱) اول پر می‌شود و بعد از تکمیل ظرفیتش، سانس بعدیِ همان روز فعال می‌شود؛ روزهای مختلف مستقل‌اند. اگر اولویت خالی بماند، ترتیب ساعت شروع ملاک است.</p>
                             </div>
                             <button type="button" class="button smv-primary-button smv-add-showtime" id="smv-add-showtime">
                                 <span class="dashicons dashicons-plus-alt2"></span> افزودن سانس جدید
@@ -743,6 +743,7 @@ class SMV_Admin {
                                         <label>تاریخ اجرا (شمسی) <input type="text" class="smv-date-input" inputmode="numeric" dir="ltr" name="showtimes[<?php echo esc_attr($st_id); ?>][date]" value="<?php echo esc_attr(SMV_Persian::date_input_value($st_date)); ?>" placeholder="۱۴۰۵/۰۲/۱۲" autocomplete="off" /></label>
                                         <label>ساعت شروع <input type="time" step="60" name="showtimes[<?php echo esc_attr($st_id); ?>][time]" value="<?php echo esc_attr($st_time); ?>" /></label>
                                         <label>ساعت پایان <input type="time" step="60" name="showtimes[<?php echo esc_attr($st_id); ?>][time_end]" value="<?php echo esc_attr($st_time_end); ?>" /></label>
+                                        <label>اولویت در روز (۱=اول پر می‌شود) <input type="number" min="1" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][priority]" value="<?php echo absint(get_post_meta($st_id, '_smv_priority', true)) ? esc_attr(absint(get_post_meta($st_id, '_smv_priority', true))) : ''; ?>" placeholder="خودکار (ساعت)" /></label>
                                         <label>ظرفیت <input type="number" min="0" step="1" name="showtimes[<?php echo esc_attr($st_id); ?>][capacity]" value="<?php echo $st_capacity ? esc_attr($st_capacity) : ''; ?>" placeholder="نامحدود" /></label>
                                         <label>قیمت (تومان) <input type="number" min="0" step="1000" name="showtimes[<?php echo esc_attr($st_id); ?>][price]" value="<?php echo $st_price ? esc_attr($st_price) : ''; ?>" placeholder="رایگان" /></label>
                                         <label class="smv-showtime-venue">محل اجرا <input type="text" name="showtimes[<?php echo esc_attr($st_id); ?>][venue]" value="<?php echo esc_attr($st_venue); ?>" placeholder="مثلاً سالن اصلی" /></label>
@@ -770,8 +771,8 @@ class SMV_Admin {
                                 <label><strong>روش‌های پرداخت فعال</strong></label>
                                 <div class="smv-payment-options">
                                     <label><input type="checkbox" name="payment_methods[]" value="free" <?php checked((isset($meta['_smv_payment_free'][0]) ? $meta['_smv_payment_free'][0] : ''), '1'); ?>> رایگان</label>
-                                    <label><input type="checkbox" name="payment_methods[]" value="financial_aid" <?php checked((isset($meta['_smv_payment_financial_aid'][0]) ? $meta['_smv_payment_financial_aid'][0] : ''), '1'); ?>> کمک مالی</label>
-                                    <label><input type="checkbox" name="payment_methods[]" value="paid" <?php checked((isset($meta['_smv_payment_paid'][0]) ? $meta['_smv_payment_paid'][0] : ''), '1'); ?>> پرداخت آنلاین (زرین‌پال)</label>
+                                    <label><input type="checkbox" name="payment_methods[]" value="financial_aid" <?php checked((isset($meta['_smv_payment_financial_aid'][0]) ? $meta['_smv_payment_financial_aid'][0] : ''), '1'); ?>> کمک مالی (مبلغ به انتخاب شخص)</label>
+                                    <label><input type="checkbox" name="payment_methods[]" value="paid" <?php checked((isset($meta['_smv_payment_paid'][0]) ? $meta['_smv_payment_paid'][0] : ''), '1'); ?>> هزینهٔ ثبت‌نام (مبلغ مشخص — از قیمت اجرا/سانس)</label>
                                 </div>
                                 <small>روش‌هایی که کاربران در فرم ثبت‌نام می‌توانند انتخاب کنند.</small>
                             </div>
@@ -815,6 +816,7 @@ class SMV_Admin {
                         <label>تاریخ اجرا (شمسی) <input type="text" class="smv-date-input" inputmode="numeric" dir="ltr" name="new_showtime[__INDEX__][date]" value="" placeholder="۱۴۰۵/۰۲/۱۲" autocomplete="off" /></label>
                         <label>ساعت شروع <input type="time" step="60" name="new_showtime[__INDEX__][time]" value="" /></label>
                         <label>ساعت پایان <input type="time" step="60" name="new_showtime[__INDEX__][time_end]" value="" /></label>
+                        <label>اولویت در روز (۱=اول پر می‌شود) <input type="number" min="1" step="1" name="new_showtime[__INDEX__][priority]" value="" placeholder="خودکار (ساعت)" /></label>
                         <label>ظرفیت <input type="number" min="0" step="1" name="new_showtime[__INDEX__][capacity]" value="" placeholder="نامحدود" /></label>
                         <label>قیمت (تومان) <input type="number" min="0" step="1000" name="new_showtime[__INDEX__][price]" value="" placeholder="رایگان" /></label>
                         <label class="smv-showtime-venue">محل اجرا <input type="text" name="new_showtime[__INDEX__][venue]" value="" placeholder="مثلاً سالن اصلی" /></label>
@@ -1280,6 +1282,7 @@ class SMV_Admin {
             update_post_meta($st_id, '_smv_showtime_time', $time);
             update_post_meta($st_id, '_smv_showtime_time_end', $time_end);
             update_post_meta($st_id, '_smv_capacity', isset($st_data['capacity']) ? smv_parse_amount($st_data['capacity']) : 0);
+            update_post_meta($st_id, '_smv_priority', isset($st_data['priority']) ? absint($st_data['priority']) : 0);
             update_post_meta($st_id, '_smv_showtime_price', isset($st_data['price']) ? smv_parse_amount($st_data['price']) : 0);
             update_post_meta($st_id, '_smv_showtime_venue', isset($st_data['venue']) ? sanitize_text_field($st_data['venue']) : '');
             wp_update_post(array(
@@ -1313,6 +1316,7 @@ class SMV_Admin {
                 update_post_meta($st_post_id, '_smv_showtime_time', $time);
                 update_post_meta($st_post_id, '_smv_showtime_time_end', $time_end);
                 update_post_meta($st_post_id, '_smv_capacity', isset($st_data['capacity']) ? smv_parse_amount($st_data['capacity']) : 0);
+                update_post_meta($st_post_id, '_smv_priority', isset($st_data['priority']) ? absint($st_data['priority']) : 0);
                 update_post_meta($st_post_id, '_smv_booked', 0);
                 update_post_meta($st_post_id, '_smv_showtime_price', isset($st_data['price']) ? smv_parse_amount($st_data['price']) : 0);
                 update_post_meta($st_post_id, '_smv_showtime_venue', isset($st_data['venue']) ? sanitize_text_field($st_data['venue']) : '');

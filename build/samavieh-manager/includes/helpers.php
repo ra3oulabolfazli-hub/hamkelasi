@@ -52,10 +52,22 @@ function smv_reviews_table_name() {
 function smv_payment_type_label($type) {
     $labels = array(
         'free' => 'رایگان',
-        'financial_aid' => 'کمک مالی',
-        'paid' => 'پرداخت شده',
+        'financial_aid' => 'کمک مالی (مبلغ به انتخاب شخص)',
+        'paid' => 'هزینهٔ ثبت‌نام (مبلغ مشخص)',
     );
     return isset($labels[$type]) ? $labels[$type] : 'نامشخص';
+}
+
+/**
+ * مبلغ مشخصِ «هزینهٔ ثبت‌نام» برای یک اجرا/سانس (تومان).
+ * اولویت با قیمت سانس است؛ اگر سانس قیمتی نداشت، قیمت خود اجرا.
+ */
+function smv_registration_fixed_fee($theatre_id, $showtime_id = 0) {
+    $price = $showtime_id ? get_post_meta($showtime_id, '_smv_showtime_price', true) : '';
+    if ('' === $price || null === $price) {
+        $price = get_post_meta($theatre_id, '_smv_price', true);
+    }
+    return absint($price);
 }
 
 /**
@@ -308,10 +320,19 @@ function smv_sort_showtimes($showtimes) {
     usort($showtimes, function ($a, $b) {
         $a_id = isset($a->ID) ? (int) $a->ID : 0;
         $b_id = isset($b->ID) ? (int) $b->ID : 0;
+        // اول: روز برگزاری (به ترتیب روزها نمایش و تکمیل می‌شوند)
         $a_date = (string) get_post_meta($a_id, '_smv_showtime_date', true);
         $b_date = (string) get_post_meta($b_id, '_smv_showtime_date', true);
         if ($a_date !== $b_date) {
             return strcmp($a_date, $b_date);
+        }
+        // داخل هر روز: اول «اولویت» ثبت‌شده توسط مدیر (۱ زودتر پر می‌شود)، بعد ساعت شروع
+        $a_priority = absint(get_post_meta($a_id, '_smv_priority', true));
+        $b_priority = absint(get_post_meta($b_id, '_smv_priority', true));
+        $a_priority_key = $a_priority > 0 ? $a_priority : 9999;
+        $b_priority_key = $b_priority > 0 ? $b_priority : 9999;
+        if ($a_priority_key !== $b_priority_key) {
+            return $a_priority_key <=> $b_priority_key;
         }
         $a_time = (string) get_post_meta($a_id, '_smv_showtime_time', true);
         $b_time = (string) get_post_meta($b_id, '_smv_showtime_time', true);
@@ -323,17 +344,48 @@ function smv_sort_showtimes($showtimes) {
     return $showtimes;
 }
 
+/** اولویت ثبت‌شدهٔ یک سانس توسط مدیر (۰ یعنی تعیین نشده) */
+function smv_showtime_priority_value($showtime_id) {
+    return absint(get_post_meta($showtime_id, '_smv_priority', true));
+}
+
+/** گروه‌بندی سانس‌ها بر اساس روز: ['2026-05-05' => [سانس‌ها به ترتیب اولویت], ...] روزها صعودی */
+function smv_group_showtimes_by_day($theatre_id) {
+    $groups = array();
+    foreach (smv_ordered_showtimes_for_theatre($theatre_id) as $showtime) {
+        $date = (string) get_post_meta($showtime->ID, '_smv_showtime_date', true);
+        if (!isset($groups[$date])) {
+            $groups[$date] = array();
+        }
+        $groups[$date][] = $showtime;
+    }
+    ksort($groups);
+    return $groups;
+}
+
+/** شمارهٔ روز (۱، ۲، …) برای یک تاریخ در میان روزهای اجرای این تئاتر */
+function smv_showtime_day_number($theatre_id, $date) {
+    $days = array_keys(smv_group_showtimes_by_day($theatre_id));
+    $index = array_search((string) $date, $days, true);
+    return false === $index ? 0 : $index + 1;
+}
+
 /** سانس‌های مرتب‌شدهٔ یک اجرا به ترتیب اولویت پر شدن */
 function smv_ordered_showtimes_for_theatre($theatre_id) {
     return smv_get_showtimes_for_theatre($theatre_id);
 }
 
-/** شمارهٔ اولویت سانس (۱ = اولین سانس)؛ اگر سانس متعلق به اجرا نباشد ۰ */
+/** شمارهٔ اولویت سانس «داخل روز خودش» (۱ = اولین سانسی که در آن روز پر می‌شود) */
 function smv_showtime_priority($showtime_id, $theatre_id = 0) {
     if (!$theatre_id) {
         $theatre_id = absint(get_post_meta($showtime_id, '_smv_theatre_id', true));
     }
-    foreach (smv_ordered_showtimes_for_theatre($theatre_id) as $index => $showtime) {
+    $date = (string) get_post_meta($showtime_id, '_smv_showtime_date', true);
+    $groups = smv_group_showtimes_by_day($theatre_id);
+    if (!isset($groups[$date])) {
+        return 0;
+    }
+    foreach ($groups[$date] as $index => $showtime) {
         if ((int) $showtime->ID === (int) $showtime_id) {
             return $index + 1;
         }
@@ -342,22 +394,47 @@ function smv_showtime_priority($showtime_id, $theatre_id = 0) {
 }
 
 /**
- * شناسهٔ تنها سانسِ «فعال» برای رزرو: اولین سانسی (با اولویت برگزاری) که هنوز ظرفیت دارد.
- * سانس‌های قبل از آن «تکمیل ظرفیت» و سانس‌های بعد از آن «در انتظار» هستند.
+ * سانس‌های «فعال» برای رزرو، به تفکیک روز: هر روز مستقل پر می‌شود،
+ * پس برای هر روز اولین سانسِ دارای ظرفیت (بر اساس اولویت همان روز) فعال است.
+ * برمی‌گرداند: ['2026-05-05' => showtime_id, ...]
  */
-function smv_active_showtime_id($theatre_id) {
-    foreach (smv_ordered_showtimes_for_theatre($theatre_id) as $showtime) {
-        $remaining = smv_showtime_seats_remaining($showtime->ID);
-        if (null === $remaining || $remaining > 0) {
-            return (int) $showtime->ID;
+function smv_active_showtime_ids($theatre_id) {
+    $actives = array();
+    foreach (smv_group_showtimes_by_day($theatre_id) as $date => $showtimes) {
+        foreach ($showtimes as $showtime) {
+            $remaining = smv_showtime_seats_remaining($showtime->ID);
+            if (null === $remaining || $remaining > 0) {
+                $actives[$date] = (int) $showtime->ID;
+                break;
+            }
         }
     }
-    return 0;
+    return $actives;
 }
 
 /**
- * وضعیت ترتیبی یک سانس: full | active | waiting
- * full = تکمیل ظرفیت، active = تنها سانس قابل رزرو، waiting = پس از تکمیل سانس قبلی فعال می‌شود.
+ * شناسهٔ اولین سانس فعال (زودترین روز) — برای سازگاری با فراخوانی‌های قبلی.
+ * برای بررسی «آیا این سانس فعال است» از smv_showtime_state استفاده کنید (روزبه‌روز).
+ */
+function smv_active_showtime_id($theatre_id) {
+    $actives = smv_active_showtime_ids($theatre_id);
+    return $actives ? (int) reset($actives) : 0;
+}
+
+/** آیا این سانس، سانس فعالِ روز خودش است؟ */
+function smv_showtime_is_active($showtime_id, $theatre_id = 0) {
+    if (!$theatre_id) {
+        $theatre_id = absint(get_post_meta($showtime_id, '_smv_theatre_id', true));
+    }
+    $date = (string) get_post_meta($showtime_id, '_smv_showtime_date', true);
+    $actives = smv_active_showtime_ids($theatre_id);
+    return isset($actives[$date]) && (int) $actives[$date] === (int) $showtime_id;
+}
+
+/**
+ * وضعیت ترتیبی یک سانس داخل روز خودش: full | active | waiting
+ * full = تکمیل ظرفیت، active = سانس قابل رزروِ این روز، waiting = پس از تکمیل سانس قبلیِ همان روز فعال می‌شود.
+ * (روزهای مختلف مستقل‌اند: فعال بودن سانس یک روز منتظر پر شدن روزهای دیگر نمی‌ماند.)
  */
 function smv_showtime_state($showtime_id, $theatre_id = 0) {
     $showtime_id = absint($showtime_id);
@@ -368,8 +445,7 @@ function smv_showtime_state($showtime_id, $theatre_id = 0) {
     if (null !== $remaining && $remaining <= 0) {
         return 'full';
     }
-    $active_id = smv_active_showtime_id($theatre_id);
-    return ($active_id && $active_id === $showtime_id) ? 'active' : 'waiting';
+    return smv_showtime_is_active($showtime_id, $theatre_id) ? 'active' : 'waiting';
 }
 
 /** متن قوانین ثبت‌نام (قابل ویرایش از تنظیمات؛ پیش‌فرض، متن سوگواره) */
