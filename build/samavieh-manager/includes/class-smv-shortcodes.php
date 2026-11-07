@@ -432,7 +432,7 @@ class SMV_Shortcodes {
                     'time' => get_post_meta($sid, '_smv_showtime_time', true),
                     'time_end' => get_post_meta($sid, '_smv_showtime_time_end', true),
                     'venue' => get_post_meta($sid, '_smv_showtime_venue', true),
-                    'price' => get_post_meta($sid, '_smv_showtime_price', true),
+                    'price' => function_exists('smv_registration_fixed_fee') ? smv_registration_fixed_fee($theatre_id, $sid) : absint(get_post_meta($sid, '_smv_showtime_price', true)),
                     'remaining' => $remaining,
                     'capacity' => absint(get_post_meta($sid, '_smv_capacity', true)),
                 );
@@ -455,6 +455,7 @@ class SMV_Shortcodes {
                     <?php if (!empty($state['theatre'])) : ?><div class="smv-success-theatre">تئاتر: <strong><?php echo esc_html($state['theatre']); ?></strong></div><?php endif; ?>
                     <?php if (!empty($state['showtime'])) : ?><div class="smv-success-showtime">سانس: <strong><?php echo esc_html($state['showtime']); ?></strong></div><?php endif; ?>
                     <?php if (!empty($state['payment_type'])) : ?><div class="smv-success-payment">روش پرداخت: <strong><?php echo esc_html($state['payment_type']); ?></strong></div><?php endif; ?>
+                    <?php if (isset($state['people_count'])) : ?><div class="smv-success-people">تعداد افراد: <strong><?php echo esc_html(SMV_Persian::digits($state['people_count'])); ?> نفر<?php echo !empty($state['companions']) ? ' (' . esc_html(smv_companions_label($state['companions'])) . ')' : ' (بدون همراه)'; ?></strong></div><?php endif; ?>
                     <?php if (!empty($state['amount'])) : ?><div class="smv-success-amount">مبلغ: <strong><?php echo esc_html(SMV_Persian::money($state['amount'])); ?></strong></div><?php endif; ?>
                     <div class="smv-tracking-code-box"><small>کد پیگیری شما</small><code dir="ltr"><?php echo esc_html($state['tracking_code']); ?></code><button type="button" class="smv-copy-button" data-smv-copy="<?php echo esc_attr($state['tracking_code']); ?>"><?php echo smv_icon('copy'); ?> کپی کد</button></div>
                     <div class="smv-important-note"><?php echo smv_icon('alert'); ?><span>این کد و شماره تماس ثبت‌شده را نزد خود نگه دارید. برای مشاهدهٔ نتیجهٔ بررسی به هر دو نیاز دارید.</span></div>
@@ -513,6 +514,18 @@ class SMV_Shortcodes {
                             </div>
                         <?php endif; ?>
 
+                        <!-- Companions: همراه ندارم / یک نفر / دو نفر -->
+                        <div class="smv-field smv-field-full">
+                            <label for="smv-companions-<?php echo esc_attr($theatre_id); ?>">تعداد همراه <b>*</b></label>
+                            <?php $old_companions = isset($old['companions']) ? max(0, min(2, absint($old['companions']))) : 0; ?>
+                            <select name="companions" id="smv-companions-<?php echo esc_attr($theatre_id); ?>" required>
+                                <option value="0" <?php selected($old_companions, 0); ?>>همراه ندارم — فقط خودم (۱ نفر)</option>
+                                <option value="1" <?php selected($old_companions, 1); ?>>یک نفر همراه — مجموع ۲ نفر</option>
+                                <option value="2" <?php selected($old_companions, 2); ?>>دو نفر همراه — مجموع ۳ نفر</option>
+                            </select>
+                            <small>هزینهٔ ثبت‌نام به‌ازای هر نفر است و با تعداد افراد بیشتر می‌شود؛ همراهان هم صندلی اشغال می‌کنند.</small>
+                        </div>
+
                         <!-- Payment type selection: رایگان / هزینهٔ ثبت‌نام (مبلغ مشخص) / کمک مالی (مبلغ به انتخاب شخص) -->
                         <div class="smv-field smv-field-full smv-payment-type-field">
                             <label for="smv-payment-type">هزینه و روش پرداخت <b>*</b></label>
@@ -533,14 +546,14 @@ class SMV_Shortcodes {
 
                         <!-- Fixed fee notice (هزینهٔ ثبت‌نام با مبلغ مشخص) -->
                         <div class="smv-field smv-field-full smv-fixed-fee-box" style="display:none;">
-                            <div class="smv-fixed-fee-note">هزینهٔ ثبت‌نام این اجرا: <strong data-smv-fixed-fee><?php echo $fixed_fee ? esc_html(SMV_Persian::money($fixed_fee)) : ''; ?></strong><small>این مبلغ از قبل مشخص شده است؛ فیش واریز آن را در بخش «فیش واریزی» بارگذاری کنید. (مبلغ نهایی بر اساس سانس انتخابی است.)</small></div>
+                            <div class="smv-fixed-fee-note">هزینهٔ ثبت‌نام برای هر نفر: <strong data-smv-fixed-fee><?php echo $fixed_fee ? esc_html(SMV_Persian::money($fixed_fee)) : ''; ?></strong><br>مبلغ قابل پرداخت شما: <strong data-smv-fixed-fee-total><?php echo $fixed_fee ? esc_html(SMV_Persian::money($fixed_fee)) : ''; ?></strong> <span data-smv-people-note></span><small>مبلغ نهایی = هزینهٔ هر نفر × تعداد افراد (خودتان + همراهان) و بر اساس سانس انتخابی است؛ فیش واریز آن را در بخش «فیش واریزی» بارگذاری کنید.</small></div>
                         </div>
 
                         <!-- Amount for financial aid: مبلغ توسط خود شخص -->
                         <div class="smv-field smv-field-full smv-financial-aid-amount" style="display:none;">
                             <label>مبلغ کمک مالی (تومان) — به انتخاب شما <b>*</b></label>
                             <input type="number" name="financial_aid_amount" id="smv-financial-aid-amount" min="1000" step="1000" placeholder="مثلاً ۵۰۰۰۰" />
-                            <small>هر مبلغی که مایلید به‌عنوان کمک مالی پرداخت کنید را خودتان وارد کنید و فیش آن را بارگذاری کنید.</small>
+                            <small>هر مبلغی که مایلید به‌عنوان کمک مالی (برای همهٔ افراد: خودتان + همراهان) پرداخت کنید را خودتان وارد کنید و فیش آن را بارگذاری کنید.</small>
                         </div>
 
                         <!-- Optional note for financial aid -->
@@ -609,14 +622,24 @@ class SMV_Shortcodes {
                         paymentSelect.addEventListener('change', toggleFields);
                     }
                     var showtimeSelect = document.getElementById('smv-showtime-<?php echo esc_js($theatre_id); ?>');
+                    var companionsSelect = document.getElementById('smv-companions-<?php echo esc_js($theatre_id); ?>');
                     function syncFee() {
                         var feeEl = document.querySelector('[data-smv-fixed-fee]');
-                        if (!feeEl || !showtimeSelect) { return; }
-                        var opt = showtimeSelect.options[showtimeSelect.selectedIndex];
-                        var price = opt ? parseInt(opt.getAttribute('data-price') || '0', 10) : 0;
-                        if (price > 0) { feeEl.textContent = price.toLocaleString('fa-IR') + ' تومان'; }
+                        var totalEl = document.querySelector('[data-smv-fixed-fee-total]');
+                        var peopleNote = document.querySelector('[data-smv-people-note]');
+                        var price = <?php echo esc_js($fixed_fee ? (int) $fixed_fee : 0); ?>;
+                        if (showtimeSelect) {
+                            var opt = showtimeSelect.options[showtimeSelect.selectedIndex];
+                            var optPrice = opt ? parseInt(opt.getAttribute('data-price') || '0', 10) : 0;
+                            if (optPrice > 0) { price = optPrice; }
+                        }
+                        var people = companionsSelect ? (parseInt(companionsSelect.value || '0', 10) + 1) : 1;
+                        if (feeEl && price > 0) { feeEl.textContent = price.toLocaleString('fa-IR') + ' تومان'; }
+                        if (totalEl) { totalEl.textContent = (price * people).toLocaleString('fa-IR') + ' تومان'; }
+                        if (peopleNote) { peopleNote.textContent = 'برای ' + people.toLocaleString('fa-IR') + ' نفر'; }
                     }
                     if (showtimeSelect) { showtimeSelect.addEventListener('change', syncFee); }
+                    if (companionsSelect) { companionsSelect.addEventListener('change', syncFee); }
                     syncFee();
                     toggleFields();
                 });
@@ -643,7 +666,7 @@ class SMV_Shortcodes {
                     <?php if ('approved' === $result['status']) : ?><div class="smv-result-message is-approved"><?php echo smv_icon('check'); ?><div><strong>ثبت‌نام شما تأیید شد</strong><p>فیش واریزی بررسی و ثبت‌نام شما با موفقیت نهایی شده است.</p></div></div>
                     <?php elseif ('rejected' === $result['status']) : ?><div class="smv-result-message is-rejected"><?php echo smv_icon('alert'); ?><div><strong>ثبت‌نام نیاز به بررسی مجدد دارد</strong><p>توضیح مدیریت را بخوانید و در صورت نیاز با سماویه تماس بگیرید.</p></div></div>
                     <?php else : ?><div class="smv-result-message is-pending"><?php echo smv_icon('clock'); ?><div><strong>درخواست شما در نوبت بررسی است</strong><p>به‌محض بررسی فیش، وضعیت در همین صفحه به‌روزرسانی می‌شود.</p></div></div><?php endif; ?>
-                    <dl class="smv-result-details"><div><dt>نام ثبت‌نام‌کننده</dt><dd><?php echo esc_html($result['name']); ?></dd></div><div><dt>کد پیگیری</dt><dd dir="ltr"><?php echo esc_html($result['tracking_code']); ?></dd></div><?php if (!empty($result['showtime'])) : ?><div><dt>سانس</dt><dd><?php echo esc_html($result['showtime']); ?></dd></div><?php endif; ?><div><dt>روش پرداخت</dt><dd><?php echo esc_html($result['payment_type_label'] ?: 'نامشخص'); ?></dd></div><div><dt>مبلغ</dt><dd><?php echo esc_html($result['amount'] ? SMV_Persian::money($result['amount']) : 'رایگان'); ?></dd></div><div><dt>تاریخ ثبت درخواست</dt><dd><?php echo esc_html($result['created_at']); ?></dd></div><div><dt>آخرین به‌روزرسانی</dt><dd><?php echo esc_html($result['updated_at']); ?></dd></div></dl>
+                    <dl class="smv-result-details"><div><dt>نام ثبت‌نام‌کننده</dt><dd><?php echo esc_html($result['name']); ?></dd></div><div><dt>کد پیگیری</dt><dd dir="ltr"><?php echo esc_html($result['tracking_code']); ?></dd></div><?php if (!empty($result['showtime'])) : ?><div><dt>سانس</dt><dd><?php echo esc_html($result['showtime']); ?></dd></div><?php endif; ?><div><dt>روش پرداخت</dt><dd><?php echo esc_html($result['payment_type_label'] ?: 'نامشخص'); ?></dd></div><div><dt>مبلغ</dt><dd><?php echo esc_html($result['amount'] ? SMV_Persian::money($result['amount']) : 'رایگان'); ?></dd></div><?php if (!empty($result['people_count'])) : ?><div><dt>تعداد افراد</dt><dd><?php echo esc_html(SMV_Persian::digits($result['people_count'])); ?> نفر<?php echo !empty($result['companions']) ? ' (' . esc_html(smv_companions_label($result['companions'])) . ')' : ''; ?></dd></div><?php endif; ?><div><dt>تاریخ ثبت درخواست</dt><dd><?php echo esc_html($result['created_at']); ?></dd></div><div><dt>آخرین به‌روزرسانی</dt><dd><?php echo esc_html($result['updated_at']); ?></dd></div></dl>
                     <?php if ($result['admin_note']) : ?><div class="smv-admin-note"><strong>توضیح مدیریت:</strong><p><?php echo nl2br(esc_html($result['admin_note'])); ?></p></div><?php endif; ?>
                 </div>
             <?php endif; ?>

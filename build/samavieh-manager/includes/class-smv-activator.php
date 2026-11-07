@@ -39,6 +39,7 @@ class SMV_Activator {
             receipt_path varchar(255) NOT NULL DEFAULT '',
             receipt_mime varchar(100) NOT NULL DEFAULT '',
             payment_type varchar(20) NOT NULL DEFAULT 'free',
+            companions tinyint(1) NOT NULL DEFAULT 0,
             amount bigint(20) NOT NULL DEFAULT 0,
             financial_aid_amount bigint(20) NOT NULL DEFAULT 0,
             financial_aid_reason text NULL,
@@ -61,6 +62,7 @@ class SMV_Activator {
         self::ensure_columns($table, array(
             'showtime_id' => 'bigint(20) unsigned NOT NULL DEFAULT 0',
             'payment_type' => "varchar(20) NOT NULL DEFAULT 'free'",
+            'companions' => 'tinyint(1) NOT NULL DEFAULT 0',
             'amount' => 'bigint(20) NOT NULL DEFAULT 0',
             'financial_aid_amount' => 'bigint(20) NOT NULL DEFAULT 0',
             'financial_aid_reason' => 'text NULL',

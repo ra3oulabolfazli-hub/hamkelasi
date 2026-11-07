@@ -60,14 +60,34 @@ function smv_payment_type_label($type) {
 
 /**
  * مبلغ مشخصِ «هزینهٔ ثبت‌نام» برای یک اجرا/سانس (تومان).
- * اولویت با قیمت سانس است؛ اگر سانس قیمتی نداشت، قیمت خود اجرا.
+ * اولویت با قیمت سانس است؛ اما قیمت سانس وقتی خالی/صفر ذخیره شده یعنی «قیمت جدا
+ * ندارد»، پس باید به قیمت خود اجرا برگشت — وگرنه با اینکه برای اجرا قیمت تعیین
+ * شده، پرداخت «مبلغ مشخص» خطای «هزینه مشخص نشده است» می‌دهد.
  */
 function smv_registration_fixed_fee($theatre_id, $showtime_id = 0) {
-    $price = $showtime_id ? get_post_meta($showtime_id, '_smv_showtime_price', true) : '';
-    if ('' === $price || null === $price) {
-        $price = get_post_meta($theatre_id, '_smv_price', true);
+    $price = $showtime_id ? absint(get_post_meta($showtime_id, '_smv_showtime_price', true)) : 0;
+    if ($price <= 0) {
+        $price = absint(get_post_meta($theatre_id, '_smv_price', true));
     }
-    return absint($price);
+    return $price;
+}
+
+/**
+ * تعداد کل افراد یک ثبت‌نام از روی تعداد همراه (۰ تا ۲ همراه مجاز است):
+ * خود شخص + همراهان. هزینهٔ «مبلغ مشخص» و مصرف ظرفیت بر اساس همین عدد است.
+ */
+function smv_registration_people_count($companions) {
+    $companions = max(0, min(2, absint($companions)));
+    return 1 + $companions;
+}
+
+/** برچسب فارسی تعداد همراه: «همراه ندارد»، «۱ همراه»، «۲ همراه» */
+function smv_companions_label($companions) {
+    $companions = max(0, min(2, absint($companions)));
+    if (0 === $companions) {
+        return 'همراه ندارد';
+    }
+    return SMV_Persian::digits($companions) . ' همراه';
 }
 
 /**
@@ -200,7 +220,8 @@ function smv_showtime_online_booked_count($showtime_id) {
         return 0;
     }
     $table = smv_table_name();
-    $count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$table} WHERE showtime_id = %d AND status <> 'rejected'", $showtime_id));
+    // هر ثبت‌نام به‌اندازهٔ «خود شخص + همراهانش» صندلی مصرف می‌کند.
+    $count = $wpdb->get_var($wpdb->prepare("SELECT COALESCE(SUM(1 + companions), 0) FROM {$table} WHERE showtime_id = %d AND status <> 'rejected'", $showtime_id));
     return (int) $count;
 }
 

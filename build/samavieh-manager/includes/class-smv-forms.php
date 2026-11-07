@@ -69,6 +69,8 @@ class SMV_Forms {
             'theatre' => get_the_title($row->theatre_id),
             'showtime' => !empty($row->showtime_id) ? get_the_title($row->showtime_id) : '',
             'payment_type_label' => smv_payment_type_label(isset($row->payment_type) ? $row->payment_type : 'free'),
+            'companions' => isset($row->companions) ? absint($row->companions) : 0,
+            'people_count' => function_exists('smv_registration_people_count') ? smv_registration_people_count(isset($row->companions) ? $row->companions : 0) : 1,
             'amount' => absint(isset($row->amount) ? $row->amount : 0),
             'name' => $row->first_name . ' ' . $row->last_name,
             'created_at' => SMV_Persian::date($row->created_at, true),
@@ -113,6 +115,9 @@ class SMV_Forms {
         $payment_type = isset($_POST['payment_type']) ? sanitize_text_field(wp_unslash($_POST['payment_type'])) : '';
         $financial_aid_amount = isset($_POST['financial_aid_amount']) ? smv_parse_amount(wp_unslash($_POST['financial_aid_amount'])) : 0;
         $financial_aid_reason = isset($_POST['financial_aid_reason']) ? sanitize_textarea_field(wp_unslash($_POST['financial_aid_reason'])) : '';
+        // تعداد همراه: ۰ (همراه ندارم)، ۱ یا ۲ نفر — هزینه و مصرف ظرفیت بر اساس مجموع افراد است.
+        $companions = isset($_POST['companions']) ? max(0, min(2, absint($_POST['companions']))) : 0;
+        $people_count = function_exists('smv_registration_people_count') ? smv_registration_people_count($companions) : (1 + $companions);
 
         $old = array(
             'first_name' => isset($_POST['first_name']) ? sanitize_text_field(wp_unslash($_POST['first_name'])) : '',
@@ -122,6 +127,7 @@ class SMV_Forms {
             'payment_type' => $payment_type,
             'financial_aid_amount' => $financial_aid_amount,
             'financial_aid_reason' => $financial_aid_reason,
+            'companions' => $companions,
         );
 
         $nonce = isset($_POST['smv_register_nonce']) ? sanitize_text_field(wp_unslash($_POST['smv_register_nonce'])) : '';
@@ -146,6 +152,9 @@ class SMV_Forms {
             $remaining = smv_showtime_seats_remaining($showtime_id);
             if (null !== $remaining && $remaining <= 0) {
                 self::fail('ظرفیت این سانس تکمیل شده است (تکمیل ظرفیت). سانس بعدی به‌صورت خودکار فعال شده است؛ صفحه را تازه‌سازی کنید.', $old);
+            }
+            if (null !== $remaining && $remaining < $people_count) {
+                self::fail('ظرفیت باقی‌ماندهٔ این سانس برای ' . SMV_Persian::digits($people_count) . ' نفر کافی نیست (فقط ' . SMV_Persian::digits($remaining) . ' صندلی خالی مانده است). تعداد همراه را کمتر کنید یا سانس دیگری انتخاب کنید.', $old);
             }
             // حالت ترتیبی: در هر روز فقط سانس فعالِ همان روز؛ حالت آزاد: هر سانس دارای ظرفیت.
             $is_active_today = function_exists('smv_showtime_is_active') ? smv_showtime_is_active($showtime_id, $theatre_id) : true;
@@ -180,10 +189,12 @@ class SMV_Forms {
             $amount = $financial_aid_amount;
         } elseif ('paid' === $payment_type) {
             // هزینهٔ ثبت‌نام: مبلغ از قبل مشخص است (قیمت سانس، و اگر نبود قیمت اجرا)
-            $amount = function_exists('smv_registration_fixed_fee') ? smv_registration_fixed_fee($theatre_id, $showtime_id) : 0;
-            if ($amount <= 0) {
+            $fee_per_person = function_exists('smv_registration_fixed_fee') ? smv_registration_fixed_fee($theatre_id, $showtime_id) : 0;
+            if ($fee_per_person <= 0) {
                 self::fail('هزینهٔ ثبت‌نام این اجرا مشخص نشده است. لطفاً روش دیگری (رایگان یا کمک مالی) انتخاب کنید.', $old);
             }
+            // هزینه به‌ازای هر نفر است و با تعداد افراد (خود شخص + همراهان) ضرب می‌شود.
+            $amount = $fee_per_person * $people_count;
         }
 
         if (empty($_POST['smv_terms_accepted']) && empty($_POST['smv_consent'])) {
@@ -227,12 +238,13 @@ class SMV_Forms {
             'receipt_path' => $receipt_path,
             'receipt_mime' => $receipt_mime,
             'payment_type' => $payment_type,
+            'companions' => $companions,
             'amount' => $amount,
             'financial_aid_amount' => $financial_aid_amount,
             'financial_aid_reason' => $financial_aid_reason,
             'created_at' => $now,
             'updated_at' => $now,
-        ), array('%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%s'));
+        ), array('%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s'));
 
         if (!$inserted) {
             if ($receipt_path) {
@@ -270,6 +282,8 @@ class SMV_Forms {
             'theatre' => get_the_title($theatre_id),
             'showtime' => $showtime_id ? get_the_title($showtime_id) : '',
             'payment_type' => smv_payment_type_label($payment_type),
+            'companions' => $companions,
+            'people_count' => $people_count,
             'amount' => $amount,
         ));
     }
