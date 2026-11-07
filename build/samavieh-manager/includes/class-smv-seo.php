@@ -11,7 +11,9 @@ class SMV_SEO {
         add_action('admin_post_smv_run_seo', array(__CLASS__, 'handle_run_seo'));
         add_action('save_post', array(__CLASS__, 'on_save'), 30, 2);
         add_action('admin_notices', array(__CLASS__, 'admin_notice'));
-        if (!self::yoast_active()) {
+        $yoast = false;
+        try { $yoast = self::yoast_active(); } catch (Throwable $e) { $yoast = false; }
+        if (!$yoast) {
             add_action('wp_head', array(__CLASS__, 'fallback_head'), 5);
         } else {
             add_filter('wpseo_schema_graph', array(__CLASS__, 'schema_graph'), 20, 2);
@@ -20,8 +22,11 @@ class SMV_SEO {
 
     public static function yoast_active() {
         if (defined('WPSEO_VERSION')) { return true; }
-        if (!function_exists('is_plugin_active')) { require_once ABSPATH . 'wp-admin/includes/plugin.php'; }
-        return is_plugin_active(self::YOAST_FILE);
+        // تشخیص بدون بارگذاری فایل‌های مدیریت در فرانت‌اند (جلوگیری از هر خطای احتمالی هنگام بارگذاری افزونه)
+        $active = get_option('active_plugins', array());
+        if (is_array($active) && in_array(self::YOAST_FILE, $active, true)) { return true; }
+        if (function_exists('is_plugin_active')) { return (bool) is_plugin_active(self::YOAST_FILE); }
+        return false;
     }
     public static function yoast_installed() {
         return file_exists(WP_PLUGIN_DIR . '/wordpress-seo/wp-seo.php');
@@ -56,8 +61,8 @@ class SMV_SEO {
     /** فقط فیلدهای خالی یواست/سئو را پر می‌کند؛ مقادیر دستی بازنویسی نمی‌شوند. */
     public static function fill_for_post($post_id, $force_from_article = false) {
         $post = get_post($post_id);
-        if (!$post || !in_array($post->post_type, self::seo_types(), true)) { return false; }
-        if ($post->post_status === 'auto-draft' || $post->post_type === 'revision') { return false; }
+        if (!$post || !isset($post->post_type) || !in_array($post->post_type, self::seo_types(), true)) { return false; }
+        if (!isset($post->post_status) || $post->post_status === 'auto-draft') { return false; }
         $site = get_bloginfo('name');
         $title = get_post_meta($post_id, '_yoast_wpseo_title', true);
         if (!$title) {

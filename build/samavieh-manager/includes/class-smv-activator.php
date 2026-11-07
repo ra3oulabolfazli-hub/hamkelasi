@@ -9,6 +9,13 @@ class SMV_Activator {
         self::create_roles();
         if (class_exists('SMV_CPT')) {
             SMV_CPT::register_post_types();
+            if (method_exists('SMV_CPT', 'register_taxonomies')) {
+                SMV_CPT::register_taxonomies();
+            }
+        }
+        // ساخت ۲۰ مقالهٔ آماده به اولین ورود مدیر به پیشخوان موکول می‌شود (نه لحظهٔ فعال‌سازی)
+        if (!get_option('smv_articles_seeded_v1')) {
+            update_option('smv_seed_articles_pending', 1);
         }
         flush_rewrite_rules();
         update_option('smv_db_version', SMV_DB_VERSION);

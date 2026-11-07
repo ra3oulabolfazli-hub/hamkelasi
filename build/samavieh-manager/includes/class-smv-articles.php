@@ -6,7 +6,7 @@ class SMV_Articles {
         add_shortcode('samavieh_articles', array(__CLASS__, 'shortcode'));
         add_shortcode('samavieh_latest_articles', array(__CLASS__, 'shortcode'));
         add_filter('the_content', array(__CLASS__, 'single_content'), 25);
-        add_action('init', array(__CLASS__, 'maybe_seed'), 30);
+        add_action('admin_init', array(__CLASS__, 'maybe_seed'), 30);
         add_action('admin_post_smv_seed_articles', array(__CLASS__, 'handle_seed'));
         add_action('admin_post_smv_seed_articles_force', array(__CLASS__, 'handle_seed_force'));
     }
@@ -42,6 +42,7 @@ class SMV_Articles {
     public static function seed($force = false) {
         $created = 0; $skipped = 0;
         foreach (self::seed_data() as $a) {
+          try {
             $existing = get_page_by_path($a['slug'], OBJECT, 'smv_article');
             if ($existing && !$force) { $skipped++; continue; }
             $cat_id = 0;
@@ -66,17 +67,29 @@ class SMV_Articles {
                 if (class_exists('SMV_SEO')) { SMV_SEO::fill_for_post($id, true); }
                 $created++;
             }
+          } catch (Throwable $e) {
+            update_option('smv_articles_seed_error', $e->getMessage());
+          }
         }
         update_option('smv_articles_seeded_v1', array('count' => $created, 'skipped' => $skipped, 'time' => time()));
         return array('created' => $created, 'skipped' => $skipped);
     }
 
     public static function maybe_seed() {
-        if (get_option('smv_articles_seeded_v1')) { return; }
+        // ساخت مقالات فقط یک بار، در محیط مدیریت، وقتی کاربرِ مجاز وارد شده باشد
+        // و پرچم «در انتظار ساخت» هنگام فعال‌سازی افزونه ست شده باشد؛ هیچ کار سنگینی
+        // هنگام فعال‌سازی یا بارگذاری صفحات سایت انجام نمی‌شود تا فعال‌سازی روی هیچ هاستی خطا ندهد.
+        if (!get_option('smv_seed_articles_pending')) { return; }
+        if (get_option('smv_articles_seeded_v1')) { delete_option('smv_seed_articles_pending'); return; }
         if (!post_type_exists('smv_article')) { return; }
-        // Only seed when an admin context or activation triggered; avoid race on front-end first hit by locking with transient
-        if (!is_admin()) { return; }
-        self::seed(false);
+        if (!current_user_can('manage_smv_registrations')) { return; }
+        try {
+            self::seed(false);
+            delete_option('smv_seed_articles_pending');
+        } catch (Throwable $e) {
+            update_option('smv_articles_seed_error', $e->getMessage());
+            delete_option('smv_seed_articles_pending');
+        }
     }
 
     public static function handle_seed() {
