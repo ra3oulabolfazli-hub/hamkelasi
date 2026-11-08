@@ -58,6 +58,10 @@ final class SMV_Plugin {
     }
 
     public function maybe_upgrade_db() {
+        // ترمیم مجوزهای نقش‌ها در به‌روزرسانی‌ها (هوک فعال‌سازی هنگام آپدیت اجرا نمی‌شود)
+        if (class_exists('SMV_Activator') && method_exists('SMV_Activator', 'ensure_capabilities')) {
+            SMV_Activator::ensure_capabilities();
+        }
         $installed = get_option('smv_db_version');
         if ($installed === SMV_DB_VERSION) {
             return;

@@ -140,6 +140,23 @@ class SMV_Activator {
         return array_values(array_unique($caps));
     }
 
+    /**
+     * اطمینان از اینکه نقش‌ها مجوزهای آخرین نسخه (از جمله مقالات) را دارند.
+     * هنگام «به‌روزرسانی» افزونه هوک فعال‌سازی اجرا نمی‌شود؛ پس اگر مجوزی کم بود
+     * همین‌جا (فقط یک بار، وقتی کمبود دیده شد) نقش‌ها ترمیم می‌شوند.
+     */
+    public static function ensure_capabilities() {
+        $admin = get_role('administrator');
+        if ($admin && method_exists($admin, 'has_cap') && !$admin->has_cap('edit_smv_articles')) {
+            self::create_roles();
+            return;
+        }
+        $manager = get_role('smv_manager');
+        if ($manager && method_exists($manager, 'has_cap') && !$manager->has_cap('edit_smv_articles')) {
+            self::create_roles();
+        }
+    }
+
     public static function create_roles() {
         $admin = get_role('administrator');
         if ($admin) {
