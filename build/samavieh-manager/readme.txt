@@ -4,7 +4,7 @@ Tags: theatre, booking, registration, persian, rtl, elementor, zarinpal, pdf
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.17.0
+Stable tag: 1.17.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,9 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 پس از وارد کردن کد مرچنت در تنظیمات و فعال کردن روش «پرداخت آنلاین» برای اجرا، دکمهٔ پرداخت در دسترس است.
 
 == Changelog ==
+
+= 1.17.1 =
+* رفع هشدار «Cannot modify header information» در بخش مقالات: ریدایرکت زیرمنوی «مقالات» به فهرست مقالات، قبلاً داخل صفحه و بعد از ارسال هدرهای مدیریت انجام می‌شد؛ حالا در admin_init و پیش از هر خروجی انجام می‌شود و برای صفحهٔ منو هم fallback امن قرار گرفت.
 
 = 1.17.0 =
 * بازگشت بخش «مقالات»: نوع نوشتهٔ اختصاصی مقاله با آرشیو /maghale/، دسته و برچسب، شورت‌کد [samavieh_articles] با کارت‌های تصویری، زمان مطالعه، مقالات مرتبط و دعوت به رزرو تئاتر. (علت خطای فعال‌سازی نسخه‌های ۱.۱۵ تا ۱.۱۶.۱ نام پوشهٔ zip بود که در ۱.۱۶.۲ رفع شد، نه این بخش.)

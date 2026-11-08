@@ -7,6 +7,9 @@ class SMV_Articles {
         add_shortcode('samavieh_latest_articles', array(__CLASS__, 'shortcode'));
         add_filter('the_content', array(__CLASS__, 'single_content'), 25);
         add_action('admin_init', array(__CLASS__, 'maybe_seed'), 30);
+        // ریدایرکت منوی «مقالات» باید در admin_init (قبل از چاپ هدر مدیریت) انجام شود؛
+        // ریدایرکت داخل callback صفحه بعد از ارسال هدرها هشدار «headers already sent» می‌دهد.
+        add_action('admin_init', array(__CLASS__, 'maybe_redirect_menu'), 1);
         add_action('admin_post_smv_seed_articles', array(__CLASS__, 'handle_seed'));
         add_action('admin_post_smv_seed_articles_force', array(__CLASS__, 'handle_seed_force'));
     }
@@ -14,6 +17,24 @@ class SMV_Articles {
     public static function admin_redirect() {
         wp_safe_redirect(admin_url('edit.php?post_type=smv_article'));
         exit;
+    }
+
+    /** اگر کاربر روی زیرمنوی «مقالات» کلیک کرده باشد، زودهنگام (بدون خروجی) به لیست مقالات می‌رویم. */
+    public static function maybe_redirect_menu() {
+        if (!isset($_GET['page']) || 'smv-articles' !== sanitize_key(wp_unslash($_GET['page']))) {
+            return;
+        }
+        if (!current_user_can('manage_smv_registrations')) {
+            return;
+        }
+        self::admin_redirect();
+    }
+
+    /** fallback صفحهٔ منو (به‌طور معمول اجرا نمی‌شود چون در admin_init ریدایرکت شده‌ایم). */
+    public static function admin_fallback() {
+        $url = admin_url('edit.php?post_type=smv_article');
+        echo '<div class="wrap" dir="rtl"><h1>مقالات</h1><p>در حال انتقال به فهرست مقالات…</p><p><a class="button button-primary" href="' . esc_url($url) . '">مشاهدهٔ فهرست مقالات</a></p></div>';
+        echo '<script>window.location.href=' . wp_json_encode($url) . ';</script>';
     }
 
     public static function seed_data() {
