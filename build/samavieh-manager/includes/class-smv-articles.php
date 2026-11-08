@@ -100,10 +100,21 @@ class SMV_Articles {
         // ساخت مقالات فقط یک بار، در محیط مدیریت، وقتی کاربرِ مجاز وارد شده باشد
         // و پرچم «در انتظار ساخت» هنگام فعال‌سازی افزونه ست شده باشد؛ هیچ کار سنگینی
         // هنگام فعال‌سازی یا بارگذاری صفحات سایت انجام نمی‌شود تا فعال‌سازی روی هیچ هاستی خطا ندهد.
-        if (!get_option('smv_seed_articles_pending')) { return; }
         if (get_option('smv_articles_seeded_v1')) { delete_option('smv_seed_articles_pending'); return; }
         if (!post_type_exists('smv_article')) { return; }
         if (!current_user_can('manage_smv_registrations')) { return; }
+        // ساخت وقتی انجام می‌شود که: پرچم فعال‌سازی ست شده باشد، یا هنوز هیچ مقاله‌ای وجود نداشته باشد
+        // (در به‌روزرسانی افزونه هوک فعال‌سازی اجرا نمی‌شود و پرچم ست نشده است).
+        if (!get_option('smv_seed_articles_pending')) {
+            $counts = wp_count_posts('smv_article');
+            $existing = 0;
+            if ($counts) {
+                foreach (array('publish', 'draft', 'pending', 'private') as $st) {
+                    if (isset($counts->$st)) { $existing += (int) $counts->$st; }
+                }
+            }
+            if ($existing > 0) { return; }
+        }
         try {
             self::seed(false);
             delete_option('smv_seed_articles_pending');
