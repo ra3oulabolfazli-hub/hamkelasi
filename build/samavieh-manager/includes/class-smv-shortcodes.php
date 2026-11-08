@@ -108,6 +108,14 @@ class SMV_Shortcodes {
                 <?php echo do_shortcode('[samavieh_theatres count="3" columns="3" show_price="0"]'); ?>
             </section>
 
+            <section class="smv-section smv-container">
+                <div class="smv-section-heading">
+                    <div><span class="smv-kicker">از دنیای تئاتر بخوانید</span><h2>تازه‌ترین مقالات</h2><p>آموزش، راهنمای تماشا و قصه‌های پشت صحنه؛ برای علاقه‌مندان تئاتر و خانواده‌ها.</p></div>
+                    <a class="smv-text-link" href="<?php echo esc_url(get_post_type_archive_link('smv_article')); ?>">همهٔ مقالات <?php echo smv_icon('arrow'); ?></a>
+                </div>
+                <?php echo do_shortcode('[samavieh_articles count="3" columns="3"]'); ?>
+            </section>
+
             <section class="smv-section smv-container smv-home-social">
                 <div class="smv-centered-heading"><span class="smv-kicker">همراه سماویه باشید</span><h2>شبکه‌های اجتماعی سماویه</h2><p>ما را در روبیکا، ایتا، بله و دیگر شبکه‌ها دنبال کنید.</p></div>
                 <?php echo do_shortcode('[samavieh_social]'); ?>

@@ -72,6 +72,12 @@ class SMV_SEO {
         $desc = get_post_meta($post_id, '_yoast_wpseo_metadesc', true);
         if (!$desc) {
             $src = $post->post_excerpt ? $post->post_excerpt : $post->post_content;
+            if ($post->post_type === 'smv_article') {
+                // برای امتیاز بهتر یواست، توضیحات با کلمهٔ کلیدی اصلی شروع می‌شود
+                $kw = self::focus_keyword_for($post);
+                $base = self::clean_desc($src, 140);
+                $src = ($kw && false === strpos($base, $kw)) ? $kw . '؛ ' . $base : $base;
+            }
             if ($post->post_type === 'smv_theatre') {
                 $src = ($post->post_excerpt ?: '') . ' مشاهده اطلاعات اجرا، سانس‌ها و ثبت‌نام آنلاین تئاتر «' . get_the_title($post) . '» در سماویه.';
             }

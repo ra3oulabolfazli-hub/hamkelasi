@@ -10,6 +10,8 @@ class SMV_Articles {
         // ریدایرکت منوی «مقالات» باید در admin_init (قبل از چاپ هدر مدیریت) انجام شود؛
         // ریدایرکت داخل callback صفحه بعد از ارسال هدرها هشدار «headers already sent» می‌دهد.
         add_action('admin_init', array(__CLASS__, 'maybe_redirect_menu'), 1);
+        add_action('admin_init', array(__CLASS__, 'maybe_upgrade_articles'), 40);
+        add_filter('wp_nav_menu_items', array(__CLASS__, 'nav_menu_item'), 20, 2);
         add_action('admin_post_smv_seed_articles', array(__CLASS__, 'handle_seed'));
         add_action('admin_post_smv_seed_articles_force', array(__CLASS__, 'handle_seed_force'));
     }
@@ -45,6 +47,10 @@ class SMV_Articles {
     public static function build_content($a) {
         $theatres = function_exists('smv_theatres_url') ? smv_theatres_url() : home_url('/theatres/');
         $h = '';
+        $img_file = 'assets/images/articles/' . $a['slug'] . '.jpg';
+        if (defined('SMV_URL') && file_exists(SMV_PATH . $img_file)) {
+            $h .= '<figure class="smv-article-hero"><img src="' . esc_url(SMV_URL . $img_file) . '" alt="' . esc_attr($a['keyword']) . '" loading="lazy"></figure>';
+        }
         $h .= '<p>' . esc_html($a['intro']) . '</p>';
         foreach ((array) $a['sections'] as $sec) {
             $h .= '<h2>' . esc_html($sec[0]) . '</h2><p>' . esc_html($sec[1]) . '</p>';
@@ -56,6 +62,9 @@ class SMV_Articles {
             $h .= '<h3>' . esc_html($f[0]) . '</h3><p>' . esc_html($f[1]) . '</p>';
         }
         $h .= '<h2>سخن پایانی</h2><p>' . esc_html($a['conclusion']) . '</p>';
+        if (!empty($a['external']['url'])) {
+            $h .= '<p>برای مطالعهٔ بیشتر: <a href="' . esc_url($a['external']['url']) . '" target="_blank" rel="noopener">' . esc_html(isset($a['external']['label']) ? $a['external']['label'] : 'منبع بیرونی') . '</a></p>';
+        }
         $h .= '<p>برای دیدن اجراهای در حال اجرا و رزرو سانس، به <a href="' . esc_url($theatres) . '">صفحهٔ تئاترهای سماویه</a> سر بزنید و دیگر <a href="' . esc_url(get_post_type_archive_link('smv_article')) . '">مقالات سماویه</a> را هم بخوانید.</p>';
         return $h;
     }
@@ -85,6 +94,7 @@ class SMV_Articles {
                 if (!empty($a['tags'])) { wp_set_post_terms($id, (array) $a['tags'], 'smv_article_tag', false); }
                 update_post_meta($id, '_smv_focus_keyword', $a['keyword']);
                 update_post_meta($id, '_smv_seeded_article', '1');
+                self::ensure_article_image($id, $a);
                 if (class_exists('SMV_SEO')) { SMV_SEO::fill_for_post($id, true); }
                 $created++;
             }
@@ -199,5 +209,81 @@ class SMV_Articles {
         $theatres = function_exists('smv_theatres_url') ? smv_theatres_url() : home_url('/theatres/');
         $extra .= '<div class="smv-article-cta"><strong>دوست دارید تئاتر را از نزدیک تجربه کنید؟</strong><p>اجراهای در حال اجرای سماویه را ببینید و سانس مناسب‌تان را رزرو کنید.</p><a class="smv-button smv-button-gold" href="' . esc_url($theatres) . '">مشاهده و ثبت‌نام تئاترها</a></div>';
         return $content . $extra;
+    }
+
+    /** افزودن «مقالات» به منوی هدر سایت (منوهای اصلی قالب) */
+    public static function nav_menu_item($items, $args) {
+        $locations = array('primary', 'main', 'header', 'primary-menu', 'main-menu', 'main_menu', 'top', 'top-menu', 'menu-1', 'header-menu');
+        $loc = isset($args->theme_location) ? $args->theme_location : '';
+        if ($loc && !in_array($loc, $locations, true)) { return $items; }
+        if (false !== strpos($items, '/maghale')) { return $items; }
+        $url = get_post_type_archive_link('smv_article');
+        if (!$url) { return $items; }
+        return $items . '<li class="menu-item smv-menu-articles"><a href="' . esc_url($url) . '">مقالات</a></li>';
+    }
+
+    /** تصویر شاخص مقاله از فایل همراه افزونه (assets/images/articles/{slug}.jpg) در کتابخانهٔ رسانه ساخته و ست می‌شود. */
+    public static function ensure_article_image($post_id, $a) {
+        if (has_post_thumbnail($post_id)) { return; }
+        $slug = isset($a['slug']) ? $a['slug'] : get_post_field('post_name', $post_id);
+        $file = SMV_PATH . 'assets/images/articles/' . $slug . '.jpg';
+        if (!file_exists($file)) { return; }
+        // استفادهٔ دوباره از ضمیمه‌ای که قبلاً برای همین مقاله ساخته شده
+        $found = get_posts(array('post_type' => 'attachment', 'post_status' => 'inherit', 'posts_per_page' => 1, 'fields' => 'ids', 'meta_key' => '_smv_article_image', 'meta_value' => $slug));
+        if (!empty($found)) {
+            set_post_thumbnail($post_id, (int) $found[0]);
+            return;
+        }
+        if (!function_exists('media_handle_sideload')) {
+            foreach (array('file.php', 'media.php', 'image.php') as $inc) {
+                $path = ABSPATH . 'wp-admin/includes/' . $inc;
+                if (file_exists($path)) { require_once $path; }
+            }
+        }
+        if (!function_exists('media_handle_sideload')) { return; }
+        $tmp = wp_tempnam(basename($file));
+        if (!$tmp || !copy($file, $tmp)) { return; }
+        $attachment_id = media_handle_sideload(array('name' => basename($file), 'tmp_name' => $tmp), $post_id, isset($a['title']) ? $a['title'] : '');
+        if (is_wp_error($attachment_id) || !$attachment_id) { @unlink($tmp); return; }
+        update_post_meta($attachment_id, '_smv_article_image', $slug);
+        if (!empty($a['keyword'])) {
+            update_post_meta($attachment_id, '_wp_attachment_image_alt', $a['keyword']);
+        }
+        set_post_thumbnail($post_id, $attachment_id);
+    }
+
+    /**
+     * یک‌بار پس از آپدیت: محتوای مقالات آماده با نسخهٔ کامل‌تر (تصویر داخل متن + لینک بیرونی)
+     * تازه می‌شود، تصویر شاخص می‌گیرند و سئوی آن‌ها از نو (فقط برای مقالات ساخته‌شدهٔ افزونه) تکمیل می‌شود.
+     */
+    public static function maybe_upgrade_articles() {
+        if (get_option('smv_articles_content_v2')) { return; }
+        if (!current_user_can('manage_smv_registrations')) { return; }
+        try {
+            foreach (self::seed_data() as $a) {
+                $post = get_page_by_path($a['slug'], OBJECT, 'smv_article');
+                if ($post && get_post_meta($post->ID, '_smv_seeded_article', true)) {
+                    wp_update_post(array('ID' => $post->ID, 'post_content' => self::build_content($a), 'post_excerpt' => $a['excerpt']));
+                    delete_post_meta($post->ID, '_yoast_wpseo_title');
+                    delete_post_meta($post->ID, '_yoast_wpseo_metadesc');
+                    delete_post_meta($post->ID, '_yoast_wpseo_focuskw');
+                    self::ensure_article_image($post->ID, $a);
+                    if (class_exists('SMV_SEO')) { SMV_SEO::fill_for_post($post->ID, true); }
+                }
+            }
+            // هر مقاله‌ای (حتی دستی) که فایل تصویرش هست و تصویر شاخص ندارد، تصویر می‌گیرد
+            $all = get_posts(array('post_type' => 'smv_article', 'post_status' => 'any', 'numberposts' => 100, 'fields' => 'ids'));
+            foreach ((array) $all as $aid) {
+                if (!has_post_thumbnail($aid)) {
+                    $slug = get_post_field('post_name', $aid);
+                    foreach (self::seed_data() as $a) {
+                        if ($a['slug'] === $slug) { self::ensure_article_image($aid, $a); break; }
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            update_option('smv_articles_upgrade_error', $e->getMessage());
+        }
+        update_option('smv_articles_content_v2', 1);
     }
 }
