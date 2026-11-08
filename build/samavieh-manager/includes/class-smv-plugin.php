@@ -44,12 +44,6 @@ final class SMV_Plugin {
         if (class_exists('SMV_Backup')) {
             SMV_Backup::init();
         }
-        if (class_exists('SMV_Articles')) {
-            SMV_Articles::init();
-        }
-        if (class_exists('SMV_SEO')) {
-            SMV_SEO::init();
-        }
 
         add_action('init', array($this, 'maybe_upgrade_db'), 5);
         add_action('wp_enqueue_scripts', array($this, 'register_assets'));
