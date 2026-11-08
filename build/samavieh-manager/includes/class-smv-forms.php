@@ -174,6 +174,12 @@ class SMV_Forms {
             self::fail('شماره تماس را به صورت شماره موبایل ۱۱ رقمی وارد کنید؛ مثلاً 09121234567.', $old);
         }
 
+        // قانون یک ثبت‌نام برای هر شماره در هر تئاتر (ثبت‌نام ردشده مانع تلاش دوباره نیست).
+        $existing_registration = function_exists('smv_phone_registration_for_theatre') ? smv_phone_registration_for_theatre($phone, $theatre_id) : false;
+        if ($existing_registration) {
+            self::fail('با این شمارهٔ تماس قبلاً برای این تئاتر ثبت‌نام شده است؛ برای هر شماره در هر تئاتر فقط یک ثبت‌نام امکان‌پذیر است. کد پیگیری ثبت‌نام قبلی شما: ' . $existing_registration->tracking_code . ' — می‌توانید وضعیت آن را از بخش «پیگیری ثبت‌نام» بررسی کنید.', $old);
+        }
+
         // فقط روش‌های پرداخت فعالِ همین اجرا پذیرفته می‌شوند.
         $enabled_methods = smv_theatre_payment_methods($theatre_id);
         if (!$payment_type || !in_array($payment_type, $enabled_methods, true)) {

@@ -25,12 +25,13 @@ th { background: #eef5f8; font-weight: bold; }
 <h1><?php echo isset($title) ? esc_html($title) : 'ثبت‌نام‌های سماویه'; ?></h1>
 <div class="info">تاریخ تهیه: <?php echo isset($date) ? esc_html($date) : SMV_Persian::date(current_time('mysql')); ?> | گروه فرهنگی هنری سماویه</div>
 
-<?php if (!empty($single_row)) : $row = $single_row; ?>
+<?php if (!empty($single_row) || (!empty($single) && !empty($rows[0]))) : $row = !empty($single_row) ? $single_row : $rows[0]; ?>
 <div class="single">
 <table>
 <tr><th style="width:35%;">کد پیگیری</th><td><?php echo esc_html($row->tracking_code); ?></td></tr>
 <tr><th>نام ثبت‌نام‌کننده</th><td><?php echo esc_html($row->first_name . ' ' . $row->last_name); ?></td></tr>
 <tr><th>شماره تماس</th><td><?php echo esc_html($row->phone); ?></td></tr>
+<tr><th>تعداد نفرات</th><td><?php echo esc_html(smv_registration_people_count(isset($row->companions) ? $row->companions : 0)); ?> نفر<?php if (!empty($row->companions)) : ?> (<?php echo esc_html(smv_companions_label($row->companions)); ?>)<?php endif; ?></td></tr>
 <tr><th>تئاتر</th><td><?php echo esc_html($row->theatre_title ?: 'تئاتر حذف شده'); ?></td></tr>
 <tr><th>وضعیت</th><td><?php echo esc_html(smv_status_label($row->status)); ?></td></tr>
 <tr><th>تاریخ ثبت</th><td><?php echo esc_html(SMV_Persian::date($row->created_at)); ?></td></tr>
@@ -40,13 +41,14 @@ th { background: #eef5f8; font-weight: bold; }
 </div>
 <?php else : ?>
 <table>
-<tr><th>کد پیگیری</th><th>نام</th><th>تلفن</th><th>تئاتر</th><th>وضعیت</th><th>تاریخ ثبت</th></tr>
+<tr><th>کد پیگیری</th><th>نام</th><th>تلفن</th><th>تئاتر</th><th>تعداد نفرات</th><th>وضعیت</th><th>تاریخ ثبت</th></tr>
 <?php foreach ($rows as $row) : ?>
 <tr>
 <td><?php echo esc_html($row->tracking_code); ?></td>
 <td><?php echo esc_html($row->first_name . ' ' . $row->last_name); ?></td>
 <td><?php echo esc_html($row->phone); ?></td>
 <td><?php echo esc_html($row->theatre_title ?: 'تئاتر حذف شده'); ?></td>
+<td><?php echo esc_html(smv_registration_people_count(isset($row->companions) ? $row->companions : 0)); ?> نفر</td>
 <td><?php echo esc_html(smv_status_label($row->status)); ?></td>
 <td><?php echo esc_html(SMV_Persian::date($row->created_at)); ?></td>
 </tr>

@@ -129,6 +129,29 @@ function smv_registration_people_count($companions) {
     return 1 + $companions;
 }
 
+/**
+ * ثبت‌نام فعالِ یک شمارهٔ تلفن برای یک تئاتر (اگر وجود داشته باشد).
+ * قانون: برای هر شماره در هر تئاتر فقط یک ثبت‌نام؛ ثبت‌نام «رد شده / نیاز به اصلاح»
+ * مانع ثبت‌نام دوباره نیست (همان‌طور که ظرفیتش هم آزاد می‌شود).
+ * خروجی: ردیف ثبت‌نام (id, tracking_code, status) یا false.
+ */
+function smv_phone_registration_for_theatre($phone, $theatre_id, $exclude_id = 0) {
+    global $wpdb;
+    $phone = class_exists('SMV_Persian') ? SMV_Persian::normalize_phone($phone) : preg_replace('/[^0-9]/', '', (string) $phone);
+    $theatre_id = absint($theatre_id);
+    $exclude_id = absint($exclude_id);
+    if (!$phone || !$theatre_id || !isset($wpdb) || !is_object($wpdb)) {
+        return false;
+    }
+    $table = smv_table_name();
+    if ($exclude_id) {
+        $row = $wpdb->get_row($wpdb->prepare("SELECT id, tracking_code, status FROM {$table} WHERE theatre_id = %d AND phone = %s AND status <> 'rejected' AND id <> %d LIMIT 1", $theatre_id, $phone, $exclude_id));
+    } else {
+        $row = $wpdb->get_row($wpdb->prepare("SELECT id, tracking_code, status FROM {$table} WHERE theatre_id = %d AND phone = %s AND status <> 'rejected' LIMIT 1", $theatre_id, $phone));
+    }
+    return $row ? $row : false;
+}
+
 /** برچسب فارسی تعداد همراه: «همراه ندارد»، «۱ همراه»، «۲ همراه» */
 function smv_companions_label($companions) {
     $companions = max(0, min(2, absint($companions)));

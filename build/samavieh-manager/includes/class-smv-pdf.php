@@ -53,6 +53,25 @@ class SMV_PDF {
         self::render_pdf('ثبت‌نام شماره ' . $row->tracking_code, $rows, true);
     }
 
+    /** برچسب «تعداد نفرات» یک ثبت‌نام: خود شخص + همراهان (مثلاً «۳ نفر (۲ همراه)») */
+    private static function people_label($row) {
+        $companions = isset($row->companions) ? $row->companions : 0;
+        $people = function_exists('smv_registration_people_count') ? smv_registration_people_count($companions) : (1 + max(0, min(2, absint($companions))));
+        $label = (class_exists('SMV_Persian') ? SMV_Persian::digits($people) : $people) . ' نفر';
+        if (!empty($companions) && function_exists('smv_companions_label')) {
+            $label .= ' (' . smv_companions_label($companions) . ')';
+        }
+        return $label;
+    }
+
+    private static function total_people($rows) {
+        $total = 0;
+        foreach ((array) $rows as $row) {
+            $total += function_exists('smv_registration_people_count') ? smv_registration_people_count(isset($row->companions) ? $row->companions : 0) : 1;
+        }
+        return $total;
+    }
+
     private static function render_pdf($title, $rows, $single = false) {
         // سعی در استفاده از TCPDF اگر نصب باشد
         $tcpdf_path = SMV_PATH . 'vendor/tecnickcom/tcpdf/tcpdf.php';
@@ -96,6 +115,7 @@ class SMV_PDF {
             $html .= '<tr><td><strong>کد پیگیری</strong></td><td>' . esc_html($row->tracking_code) . '</td></tr>';
             $html .= '<tr><td><strong>نام</strong></td><td>' . esc_html($row->first_name . ' ' . $row->last_name) . '</td></tr>';
             $html .= '<tr><td><strong>تلفن</strong></td><td>' . esc_html($row->phone) . '</td></tr>';
+            $html .= '<tr><td><strong>تعداد نفرات</strong></td><td>' . esc_html(self::people_label($row)) . '</td></tr>';
             $html .= '<tr><td><strong>تئاتر</strong></td><td>' . esc_html($row->theatre_title ?: 'تئاتر حذف شده') . '</td></tr>';
             $html .= '<tr><td><strong>وضعیت</strong></td><td>' . esc_html(smv_status_label($row->status)) . '</td></tr>';
             $html .= '<tr><td><strong>تاریخ ثبت</strong></td><td>' . esc_html(SMV_Persian::date($row->created_at)) . '</td></tr>';
@@ -106,18 +126,20 @@ class SMV_PDF {
             $html .= '</table>';
         } else {
             $html .= '<table border="1" cellpadding="4" style="font-family:dejavusans; font-size:8pt; border-collapse:collapse; width:100%;">';
-            $html .= '<tr style="background:#eef5f8;"><th>کد پیگیری</th><th>نام</th><th>تلفن</th><th>تئاتر</th><th>وضعیت</th><th>تاریخ ثبت</th></tr>';
+            $html .= '<tr style="background:#eef5f8;"><th>کد پیگیری</th><th>نام</th><th>تلفن</th><th>تئاتر</th><th>تعداد نفرات</th><th>وضعیت</th><th>تاریخ ثبت</th></tr>';
             foreach ($rows as $row) {
                 $html .= '<tr>';
                 $html .= '<td>' . esc_html($row->tracking_code) . '</td>';
                 $html .= '<td>' . esc_html($row->first_name . ' ' . $row->last_name) . '</td>';
                 $html .= '<td>' . esc_html($row->phone) . '</td>';
                 $html .= '<td>' . esc_html($row->theatre_title ?: 'تئاتر حذف شده') . '</td>';
+                $html .= '<td>' . esc_html(self::people_label($row)) . '</td>';
                 $html .= '<td>' . esc_html(smv_status_label($row->status)) . '</td>';
                 $html .= '<td>' . esc_html(SMV_Persian::date($row->created_at)) . '</td>';
                 $html .= '</tr>';
             }
             $html .= '</table>';
+            $html .= '<p style="font-family:dejavusans; font-size:9pt;"><strong>مجموع نفرات:</strong> ' . esc_html(self::total_people($rows)) . ' نفر در ' . esc_html(count((array) $rows)) . ' ثبت‌نام</p>';
         }
 
         $pdf->writeHTML($html, true, false, true, false, '');
@@ -176,6 +198,7 @@ class SMV_PDF {
                     <tr><th style="width:30%;">کد پیگیری</th><td><?php echo esc_html($row->tracking_code); ?></td></tr>
                     <tr><th>نام ثبت‌نام‌کننده</th><td><?php echo esc_html($row->first_name . ' ' . $row->last_name); ?></td></tr>
                     <tr><th>شماره تماس</th><td><?php echo esc_html($row->phone); ?></td></tr>
+                    <tr><th>تعداد نفرات</th><td><?php echo esc_html(self::people_label($row)); ?></td></tr>
                     <tr><th>تئاتر</th><td><?php echo esc_html($row->theatre_title ?: 'تئاتر حذف شده'); ?></td></tr>
                     <tr><th>وضعیت</th><td><?php echo esc_html(smv_status_label($row->status)); ?></td></tr>
                     <tr><th>تاریخ ثبت</th><td><?php echo esc_html(SMV_Persian::date($row->created_at)); ?></td></tr>
@@ -184,18 +207,20 @@ class SMV_PDF {
                 </table>
             <?php else : ?>
                 <table>
-                    <tr><th>کد پیگیری</th><th>نام</th><th>تلفن</th><th>تئاتر</th><th>وضعیت</th><th>تاریخ ثبت</th></tr>
+                    <tr><th>کد پیگیری</th><th>نام</th><th>تلفن</th><th>تئاتر</th><th>تعداد نفرات</th><th>وضعیت</th><th>تاریخ ثبت</th></tr>
                     <?php foreach ($rows as $row) : ?>
                     <tr>
                         <td><?php echo esc_html($row->tracking_code); ?></td>
                         <td><?php echo esc_html($row->first_name . ' ' . $row->last_name); ?></td>
                         <td><?php echo esc_html($row->phone); ?></td>
                         <td><?php echo esc_html($row->theatre_title ?: 'تئاتر حذف شده'); ?></td>
+                        <td><?php echo esc_html(self::people_label($row)); ?></td>
                         <td><?php echo esc_html(smv_status_label($row->status)); ?></td>
                         <td><?php echo esc_html(SMV_Persian::date($row->created_at)); ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </table>
+                <?php if (empty($single)) : ?><p><strong>مجموع نفرات:</strong> <?php echo esc_html(self::total_people($rows)); ?> نفر در <?php echo esc_html(count((array) $rows)); ?> ثبت‌نام</p><?php endif; ?>
             <?php endif; ?>
 
             <div class="print-btn"><button onclick="window.print()">چاپ / ذخیره به عنوان PDF</button></div>
