@@ -77,6 +77,8 @@ class SMV_Admin {
         add_submenu_page('smv-dashboard', 'پیشخوان سماویه', $icon('dashboard') . 'پیشخوان', 'manage_smv_registrations', 'smv-dashboard', array(__CLASS__, 'dashboard'));
         add_submenu_page('smv-dashboard', 'ثبت‌نام‌ها و فیش‌ها', $icon('clipboard') . 'ثبت‌نام‌ها', 'manage_smv_registrations', 'smv-registrations', array(__CLASS__, 'registrations'));
         add_submenu_page('smv-dashboard', 'مدیریت تئاترها', $icon('tickets-alt') . 'تئاترها', 'manage_smv_registrations', 'smv-theatres', array(__CLASS__, 'theatres'));
+        add_submenu_page('smv-dashboard', 'مقالات', $icon('media-document') . 'مقالات', 'manage_smv_registrations', 'smv-articles', array('SMV_Articles', 'admin_redirect'));
+        add_submenu_page('smv-dashboard', 'سئو و یواست', $icon('search') . 'سئو و یواست', 'manage_smv_registrations', 'smv-seo', array('SMV_SEO', 'render_page'));
         add_submenu_page('smv-dashboard', 'نظرات تأییدشده', $icon('format-status') . 'نظرات', 'manage_smv_registrations', 'smv-reviews', array(__CLASS__, 'reviews'));
         add_submenu_page('smv-dashboard', 'تنظیمات سماویه', $icon('admin-generic') . 'تنظیمات و اطلاعات تماس', 'manage_smv_registrations', 'smv-settings', array('SMV_Settings', 'render_page'));
         add_submenu_page('smv-dashboard', 'تنظیمات اینماد', $icon('shield') . 'تنظیمات اینماد', 'manage_smv_registrations', 'smv-enamad', array('SMV_Enamad', 'render_page'));
